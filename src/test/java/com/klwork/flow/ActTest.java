@@ -38,7 +38,7 @@ public class ActTest extends AbstractKlworkTestCase {
 				.singleResult().getId();
 		List<String> deploymentResources = repositoryService
 				.getDeploymentResourceNames(deploymentId);
-		// verify bpmn file name
+		// verify bpmn file name sdfsdf
 		// com/klwork/flow/act-test.bpmn20.xml,
 		// com/klwork/flow/act-test.process.png
 		//assertEquals(1, deploymentResources.size());
