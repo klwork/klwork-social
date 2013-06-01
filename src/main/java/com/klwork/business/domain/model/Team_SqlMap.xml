@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<!--
+	(team) :${table.comment}
+字段:
+	id(varchar)	:
+	ownuser(varchar)	:
+sqlMapConfig:
+	<typeAlias alias="Team" type="com.klwork.business.domain/model.Team" />
+	<mapper resource="com/klwork/business/domain/model/Team_SqlMap.xml" />
+-->
+<mapper namespace="com.klwork.business.domain.model.Team">
+
+  <!-- INSERT -->
+  <insert id="insertTeam" parameterType="com.klwork.business.domain.model.Team">
+    insert into team (
+    	id,
+	ownuser
+	)
+    values (
+      		#{id,jdbcType=VARCHAR},
+    	#{ownuser,jdbcType=VARCHAR}
+    	)
+  </insert>
+  
+  <!-- UPDATE -->
+  <update id="updateTeam" parameterType="com.klwork.business.domain.model.Team">
+    update team set
+    	 id = #{id,jdbcType=VARCHAR},
+ ownuser = #{ownuser,jdbcType=VARCHAR}
+ where 0 > 1
+  </update>
+
+  <!-- SELECT -->
+  <select id="selectTeamById" parameterType="string" resultMap="TeamMap">
+    select * from team where ID_ = #{id,jdbcType=INTEGER}
+  </select>
+  
+  <select id="selectTeamByQueryCriteria" parameterType="com.klwork.business.domain.model.TeamQuery" resultMap="TeamMap">
+    select U.*
+    <include refid="selectTeamByQueryCriteriaSql" />
+    <if test="start !=0 or limit!=0">
+    limit #{start},#{limit}
+	</if>
+    <!--if test="orderBy != null">
+      order by ${orderBy}
+    </if> -->
+  </select>
+  
+   <select id="selectTeamCountByQueryCriteria" parameterType="com.klwork.business.domain.model.TeamQuery" resultType="int">
+    select count(U.ID_)
+    <include refid="selectTeamByQueryCriteriaSql" />
+  </select>
+  
+  <sql id="selectTeamByQueryCriteriaSql">
+    from team U
+    <where>
+        <if test="id != null">
+        AND U.id = #{id}
+    </if>
+          <if test="ownuser != null">
+        AND U.ownuser = #{ownuser}
+    </if>
+          </where>
+  </sql>
+  
+	<resultMap id="TeamMap" type="com.klwork.business.domain.model.Team">
+	<result property="id" column="id" />
+	<result property="ownuser" column="ownuser" />
+</resultMap>
+</mapper>
