@@ -123,7 +123,7 @@ public class ProfilePanel extends Panel {
   protected void initUi() {
 	  
     //removeAllComponents();
-	  setContent(null);
+	setContent(null);
     addStyleName(Reindeer.PANEL_LIGHT);
     addStyleName(ExplorerLayout.STYLE_PROFILE_LAYOUT);
     setSizeFull();

@@ -66,6 +66,7 @@ import com.vaadin.ui.TableFieldFactory;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.TreeTable;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.themes.Reindeer;
 import com.vaadin.ui.themes.Runo;
 
 public class ProjectTreeTable extends CustomComponent {
@@ -87,8 +88,7 @@ public class ProjectTreeTable extends CustomComponent {
 	final HashMap<Field, Object> itemIds = new HashMap<Field, Object>();
 
 	final TreeTable mainTreeTable = new TreeTable("我的周计划");
-	// 到期时间
-	DateField completionDateField;
+
 	private BeanItem<Todo> currentBeanItem;
 	HierarchicalContainer hContainer = null;
 
@@ -118,23 +118,18 @@ public class ProjectTreeTable extends CustomComponent {
 		// 主界面
 		initMain(layout);
 
-		initfoot(layout);
 	}
 
-	private void initfoot(VerticalLayout layout) {
-		bottomLayout = initBottomLayout(layout);
-		updateBottomLayout(bottomLayout);
-	}
-	
-	private void reflashBottom() {
-		updateBottomLayout(bottomLayout);
-	}
-	
 	@SuppressWarnings("unchecked")
 	private Todo getFieldGroupTodo() {
 		BeanItem<Todo> item = (BeanItem<Todo>) scheduleEventFieldGroup
 				.getItemDataSource();
 		Todo todo = item.getBean();
+		initTodoProId(todo);
+		return todo;
+	}
+
+	public void initTodoProId(Todo todo) {
 		// WW_TODO 保存是设置项目id和用户
 		if (!StringTool.judgeBlank(todo.getProId())) {
 			todo.setProId(projectId);
@@ -142,223 +137,24 @@ public class ProjectTreeTable extends CustomComponent {
 		if (todo.getAssignedUser() == null) {
 			todo.setAssignedUser(LoginHandler.getLoggedInUser().getId());
 		}
-		return todo;
-	}
-
-	private ComboBox createTimeUnitComboBox() {
-		ComboBox s = new ComboBox("");
-		s.addContainerProperty("unit", String.class, 0);
-		s.setItemCaptionPropertyId("unit");
-		Item i = s.addItem(0);
-		i.getItemProperty("unit").setValue("小时");
-		s.select(0);
-		i = s.addItem(1);
-		i.getItemProperty("unit").setValue("天");
-		i = s.addItem(2);
-		i.getItemProperty("unit").setValue("分钟");
-		s.setWidth("55px");
-
-		return s;
-	}
-
-	public void updateBottomLayout(VerticalLayout bottom) {
-		bottomLayout.removeAllComponents();
-		scheduleEventFieldGroup = new FieldGroup();
-		scheduleEventFieldGroup.setBuffered(true);
-		if (currentBeanItem != null) {
-			scheduleEventFieldGroup.setItemDataSource(currentBeanItem);
-		}
-
-		// layout.setExpandRatio(bottom, 1f);
-		HorizontalLayout line = new HorizontalLayout() {
-			@Override
-			public void addComponent(Component c) {
-				super.addComponent(c);
-				setComponentAlignment(c, Alignment.MIDDLE_LEFT);
-				c.setSizeUndefined();
-			}
-		};
-		line.setWidth("100%");
-		line.setSpacing(true);
-		/*
-		 * Label first = new Label("优先级:"); line.addComponent(first);
-		 * first.setWidth("80px");
-		 */
-		NativeSelect select = new NativeSelect("优先级:");
-		select.addItem("无");
-		select.addItem("0(最低)");
-		String itemId = "1(中)";
-		select.addItem(itemId);
-		select.addItem("2(高)");
-		select.setNullSelectionAllowed(false);
-		select.select(itemId);
-		line.addComponent(select);
-
-		// line.addComponent(new Label("完成百分比:"));
-		TextField tf = new TextField("完成百分比:");
-		tf.setInputPrompt("50%");
-		line.addComponent(tf);
-		
-		//创建一个时间后台变化的listener
-		BlurListener timeReCountListener = createTimeReCountListener();
-		DateField startDateField = CommonFieldHandler.createDateField("开始时间",
-				false);
-
-		scheduleEventFieldGroup.bind(startDateField, "startDate");
-		startDateField.addBlurListener(timeReCountListener);
-		line.addComponent(startDateField);
-
-		// line.addComponent(new Label("估算时间"));
-		HorizontalLayout x = new HorizontalLayout();
-		TextField estimateField = new TextField("估算时间");
-		// estimateField.setInputPrompt("");
-		x.addComponent(estimateField);
-
-		estimateField.addBlurListener(timeReCountListener);
-		scheduleEventFieldGroup.bind(estimateField, "estimate");
-		// gs.setWidth("100%");
-		// WW_TODO 估算时间单位
-		ComboBox unit_cb = createTimeUnitComboBox();
-		x.addComponent(unit_cb);
-		scheduleEventFieldGroup.bind(unit_cb, "estimateUnit");
-		unit_cb.addBlurListener(timeReCountListener);
-		// unit_cb.setWidth("15px");
-
-		line.addComponent(x);
-		// line.setS
-
-
-
-		completionDateField = CommonFieldHandler.createDateField("到期时间", false);
-		line.addComponent(completionDateField);
-		scheduleEventFieldGroup.bind(completionDateField, "completionDate");
-		line.setExpandRatio(completionDateField, 1.0f);
-		
-		bottom.addComponent(line);
-
-		line = new HorizontalLayout() {
-			@Override
-			public void addComponent(Component c) {
-				super.addComponent(c);
-				setComponentAlignment(c, Alignment.MIDDLE_LEFT);
-				c.setSizeUndefined();
-			}
-		};
-		line.setWidth("100%");
-		line.setSpacing(true);
-
-		TextField nameField = new TextField("标题");
-		nameField.setWidth("100%");
-		//nameField.setSizeUndefined();
-		scheduleEventFieldGroup.bind(nameField, "name");
-		line.addComponent(nameField);
-		line.setExpandRatio(nameField, 0.7f);
-		
-		// line.addComponent(new Label("消耗时间"));
-		TextField gs1 = new TextField("消耗时间");
-		gs1.setInputPrompt("50%");
-		line.addComponent(gs1);
-		
-		CheckBox relatedCalendar_cb = new CheckBox("关联日历");
-		relatedCalendar_cb.setValue(false);
-		line.addComponent(relatedCalendar_cb);
-		scheduleEventFieldGroup.bind(relatedCalendar_cb, "relatedCalendar");
-
-		CheckBox cb = new CheckBox("是否关联外部任务");
-		cb.setValue(true);
-		line.addComponent(cb);
-		scheduleEventFieldGroup.bind(cb, "relatedTask");
-
-		NativeSelect select2 = new NativeSelect("外部任务类型");
-		select2.addItem("外包任务");
-		select2.addItem("外包任务-类型2");
-		select2.setNullSelectionAllowed(false);
-		line.addComponent(select2);
-		// select2.select("Timed");
-		
-		Button updateSave = new Button("save");
-		updateSave.addClickListener(new ClickListener() {
-			@SuppressWarnings("unchecked")
-			public void buttonClick(ClickEvent event) {
-				//WW_TODO 下半段保存到数据库
-				Todo fieldGroupTodo = saveFieldGroupToDB();
-				//reflash current Item
-				copyBeanValueToContainer(hContainer,(BeanItem<Todo>)(scheduleEventFieldGroup.getItemDataSource()));
-				//刷新日历
-				main.refreshCalendarView();
-				Notification.show("保存成功", Notification.Type.HUMANIZED_MESSAGE);
-				//如果有外部流程，启动外部流程
-				if (fieldGroupTodo.getRelatedTask()) {
-					ViewToolManager
-							.showPopupWindow(new ActivityStartPopupWindow(
-									"1111"));
-				}
-			}
-		});
-		line.addComponent(updateSave);
-		line.setExpandRatio(updateSave, 1.0f);
-
-		bottom.addComponent(line);
-	}
-
-	public BlurListener createTimeReCountListener() {
-		BlurListener timeReCountListener = new BlurListener() {
-			public void blur(BlurEvent event) {
-				commitGroup();
-				Todo t = getFieldGroupTodo();
-				Double estimate = t.getEstimate();
-				if (estimate == null || t.getStartDate() == null) {
-					return;
-				}
-				int fact = 0;
-				if (new Integer(0).equals(t.getEstimateUnit())) {
-					fact = estimate.intValue();
-					t.setCompletionDate(StringDateUtil.addHour(
-							t.getStartDate(), fact));
-				}
-				if (new Integer(1).equals(t.getEstimateUnit())) {
-					fact = (int) (estimate * 24);
-					t.setCompletionDate(StringDateUtil.addHour(
-							t.getStartDate(), fact));
-				}
-				if (new Integer(2).equals(t.getEstimateUnit())) {
-					fact = (int) (estimate * 1);
-					t.setCompletionDate(StringDateUtil.addMinute(
-							t.getStartDate(), fact));
-				}
-				completionDateField.setValue(t.getCompletionDate());
-			}
-		};
-		return timeReCountListener;
-	}
-
-	public VerticalLayout initBottomLayout(VerticalLayout layout) {
-		VerticalLayout bottom = new VerticalLayout();
-		bottom.setSizeFull();
-		// bottom.setMargin(true);
-		bottom.setSpacing(true);
-		bottom.addStyleName(Runo.LAYOUT_DARKER);
-		layout.addComponent(bottom);
-		layout.setExpandRatio(bottom, 0.3f);
-		return bottom;
 	}
 
 	private void initHead(VerticalLayout layout) {
 		// Header
 		HorizontalLayout header = new HorizontalLayout();
 		header.setWidth(100, Unit.PERCENTAGE);
-		/*final Button saveButton = new Button(
-				i18nManager.getMessage(Messages.PROFILE_SAVE));
-		saveButton.setIcon(Images.SAVE);
-		saveButton.addClickListener(new ClickListener() {
-			public void buttonClick(ClickEvent event) {
-				commit();
-			}
-
-		});
-
-		header.addComponent(saveButton);
-		header.setComponentAlignment(saveButton, Alignment.MIDDLE_RIGHT);*/
+		/*
+		 * final Button saveButton = new Button(
+		 * i18nManager.getMessage(Messages.PROFILE_SAVE));
+		 * saveButton.setIcon(Images.SAVE); saveButton.addClickListener(new
+		 * ClickListener() { public void buttonClick(ClickEvent event) {
+		 * commit(); }
+		 * 
+		 * });
+		 * 
+		 * header.addComponent(saveButton);
+		 * header.setComponentAlignment(saveButton, Alignment.MIDDLE_RIGHT);
+		 */
 		layout.addComponent(header);
 		layout.setSpacing(true);
 	}
@@ -369,7 +165,7 @@ public class ProjectTreeTable extends CustomComponent {
 		panel.addActionHandler(new KbdHandler());
 		// panel.setHeight(-1, Unit.PIXELS);
 		layout.addComponent(panel);
-		layout.setExpandRatio(panel, 0.7f);
+		layout.setExpandRatio(panel, 1.0f);
 		panel.setContent(mainTreeTable);
 
 		// init tabletree
@@ -449,7 +245,7 @@ public class ProjectTreeTable extends CustomComponent {
 					currentBeanItem = (BeanItem<Todo>) value;
 				}
 				// 同时更新下面的数据
-				updateBottomLayout(bottomLayout);
+				// updateBottomLayout(bottomLayout);
 			}
 		});
 
@@ -465,8 +261,7 @@ public class ProjectTreeTable extends CustomComponent {
 	}
 
 	private void setTableHeadDisplay(final TreeTable ttable) {
-		
-		
+
 		visibleColumnIds.add("name");
 		visibleColumnIds.add("priority");
 		visibleColumnIds.add("complete");
@@ -488,14 +283,12 @@ public class ProjectTreeTable extends CustomComponent {
 		visibleColumnLabels.add("标签");
 		visibleColumnLabels.add("类型");
 		visibleColumnLabels.add("操作");
-		
-		ttable.addGeneratedColumn("edit",
-                new ValueEditColumnGenerator());
+
+		ttable.addGeneratedColumn("edit", new ValueEditColumnGenerator());
 
 		ttable.setVisibleColumns(visibleColumnIds.toArray());
 		ttable.setColumnHeaders(visibleColumnLabels.toArray(new String[0]));
-		
-		
+
 	}
 
 	private void rightClickHandler(final TreeTable ttable) {
@@ -514,7 +307,7 @@ public class ProjectTreeTable extends CustomComponent {
 
 						hContainer.setChildrenAllowed(newbeanItem, false);
 						hContainer.setChildrenAllowed(currentBeanItem, true);
-					    copyBeanValueToContainer(hContainer, newbeanItem);
+						copyBeanValueToContainer(hContainer, newbeanItem);
 						// 设置父节点
 						hContainer.setParent(newbeanItem, currentBeanItem);
 						Todo paretTodo = currentBeanItem.getBean();
@@ -625,17 +418,18 @@ public class ProjectTreeTable extends CustomComponent {
 							for (Field f : itemMap.values()) {// 所有字段只读
 								f.setReadOnly(true);
 							}
-							
-							//copy toBean
+
+							// copy toBean
 							Todo todo = tableItemToBean(currentBeanItem);
+							
+							
 							List<Todo> l = new ArrayList();
 							l.add(todo);
 							todoService.saveTodoList(l);
-							
-							reflashBottom();
+
+							// reflashBottom();
 						}
 
-					
 					});
 					// 把name设置到cache中
 					saveTfToCache(itemId, propertyId, tf);
@@ -749,9 +543,10 @@ public class ProjectTreeTable extends CustomComponent {
 
 		}
 	}
-	
+
 	/**
 	 * 把Bean的值copy到容器中
+	 * 
 	 * @param container
 	 * @param newBeanItem
 	 */
@@ -818,7 +613,7 @@ public class ProjectTreeTable extends CustomComponent {
 			container.getContainerProperty(beanItem, propertyId).setValue(v);
 		}
 	}
-	
+
 	/**
 	 * 提交table的所有内容
 	 */
@@ -837,13 +632,7 @@ public class ProjectTreeTable extends CustomComponent {
 			BeanItem<Todo> beanItem = (BeanItem) iterator.next();
 
 			Todo todo = tableItemToBean(beanItem);
-			// WW_TODO 保存是设置项目id和用户
-			if (!StringTool.judgeBlank(todo.getProId())) {
-				todo.setProId(projectId);
-			}
-			if (todo.getAssignedUser() == null) {
-				todo.setAssignedUser(LoginHandler.getLoggedInUser().getId());
-			}
+			initTodoProId(todo);
 			beanList.add(todo);
 			System.out.println("--------------" + todo);
 
@@ -866,25 +655,8 @@ public class ProjectTreeTable extends CustomComponent {
 			itemProperty.setValue(newValue);
 		}
 		Todo todo = beanItem.getBean();
+		initTodoProId(todo);
 		return todo;
-	}
-
-	/**
-	 * 提交绑定的fieldGroup
-	 */
-	public void commitGroup() {
-		try {
-			scheduleEventFieldGroup.commit();
-		} catch (CommitException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public Todo saveFieldGroupToDB() {
-		commitGroup();
-		Todo fieldGroupTodo = getFieldGroupTodo();
-		todoService.updateTodo(fieldGroupTodo);
-		return fieldGroupTodo;
 	}
 
 	// Keyboard navigation
@@ -909,18 +681,46 @@ public class ProjectTreeTable extends CustomComponent {
 			}
 		}
 	}
-	
-	public class ValueEditColumnGenerator implements ColumnGenerator {
 
+	public class ValueEditColumnGenerator implements ColumnGenerator {
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = -5950078454864053894L;
 
 		@Override
-		public Object generateCell(Table source, Object itemId, Object columnId) {
-			Label label = new Label("edit");
-			return label;
+		public Object generateCell(Table source, final Object itemId, Object columnId) {
+			
+			Button editButton = new Button("");
+			editButton.addStyleName(Reindeer.BUTTON_LINK);
+			editButton.setIcon(Images.EDIT);
+			editButton.addClickListener(new ClickListener() {
+				public void buttonClick(ClickEvent event) {
+					// WW_TODO 后台进行修改
+					EditTodoPopupWindow editTodoPop = new EditTodoPopupWindow(
+							(BeanItem<Todo>) itemId,projectId);
+					editTodoPop.addListener(new SubmitEventListener() {
+					    private static final long serialVersionUID = 1L;
+					
+						@Override
+						protected void cancelled(SubmitEvent event) {
+							
+						}
+
+						@Override
+						protected void submitted(SubmitEvent event) {
+							if(event.getData() != null){
+								//将值copy回来，进行日历刷新
+								copyBeanValueToContainer(hContainer,(BeanItem<Todo>) event.getData());
+								main.refreshCalendarView();
+							}
+						}
+					});
+
+					ViewToolManager.showPopupWindow(editTodoPop);
+				}
+			});
+			return editButton;
 		}
 
 	}
