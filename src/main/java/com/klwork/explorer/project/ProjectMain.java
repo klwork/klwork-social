@@ -156,7 +156,12 @@ public class ProjectMain extends CustomComponent {
 	private MyCalendarView buildMyCalendarView() {
 		return new MyCalendarView();
 	}
-
+	
+	/**
+	 * 生成一个项目的任务树
+	 * @param prgId
+	 * @return
+	 */
 	private Component buildTodoListScreen(String prgId) {
 		return new ProjectTreeTable(prgId,this);
 	}

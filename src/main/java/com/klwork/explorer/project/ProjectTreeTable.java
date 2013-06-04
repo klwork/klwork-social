@@ -132,6 +132,13 @@ public class ProjectTreeTable extends CustomComponent {
 		BeanItem<Todo> item = (BeanItem<Todo>) scheduleEventFieldGroup
 				.getItemDataSource();
 		Todo todo = item.getBean();
+		// WW_TODO 保存是设置项目id和用户
+		if (!StringTool.judgeBlank(todo.getProId())) {
+			todo.setProId(projectId);
+		}
+		if (todo.getAssignedUser() == null) {
+			todo.setAssignedUser(LoginHandler.getLoggedInUser().getId());
+		}
 		return todo;
 	}
 
@@ -188,9 +195,9 @@ public class ProjectTreeTable extends CustomComponent {
 		TextField tf = new TextField("完成百分比:");
 		tf.setInputPrompt("50%");
 		line.addComponent(tf);
-		// tf.setWidth("100%");
+		
+		//创建一个时间后台变化的listener
 		BlurListener timeReCountListener = createTimeReCountListener();
-
 		DateField startDateField = CommonFieldHandler.createDateField("开始时间",
 				false);
 
@@ -217,35 +224,13 @@ public class ProjectTreeTable extends CustomComponent {
 		line.addComponent(x);
 		// line.setS
 
-		// line.addComponent(new Label("消耗时间"));
-		TextField gs1 = new TextField("消耗时间");
-		gs1.setInputPrompt("50%");
-		line.addComponent(gs1);
+
 
 		completionDateField = CommonFieldHandler.createDateField("到期时间", false);
 		line.addComponent(completionDateField);
 		scheduleEventFieldGroup.bind(completionDateField, "completionDate");
-
-		Button updateSave = new Button("save");
-		updateSave.addClickListener(new ClickListener() {
-			@SuppressWarnings("unchecked")
-			public void buttonClick(ClickEvent event) {
-				//保存到数据库
-				Todo fieldGroupTodo = saveFieldGroupToDB();
-				//reflash current Item
-				copyBeanValueToContainer(hContainer,(BeanItem<Todo>)(scheduleEventFieldGroup.getItemDataSource()));
-				//刷新日历
-				main.refreshCalendarView();
-				Notification.show("保存成功", Notification.Type.HUMANIZED_MESSAGE);
-				//如果有外部流程，启动外部流程
-				if (fieldGroupTodo.getRelatedTask()) {
-					ViewToolManager
-							.showPopupWindow(new ActivityStartPopupWindow(
-									"1111"));
-				}
-			}
-		});
-		line.addComponent(updateSave);
+		line.setExpandRatio(completionDateField, 1.0f);
+		
 		bottom.addComponent(line);
 
 		line = new HorizontalLayout() {
@@ -261,9 +246,16 @@ public class ProjectTreeTable extends CustomComponent {
 
 		TextField nameField = new TextField("标题");
 		nameField.setWidth("100%");
+		//nameField.setSizeUndefined();
 		scheduleEventFieldGroup.bind(nameField, "name");
 		line.addComponent(nameField);
-
+		line.setExpandRatio(nameField, 0.7f);
+		
+		// line.addComponent(new Label("消耗时间"));
+		TextField gs1 = new TextField("消耗时间");
+		gs1.setInputPrompt("50%");
+		line.addComponent(gs1);
+		
 		CheckBox relatedCalendar_cb = new CheckBox("关联日历");
 		relatedCalendar_cb.setValue(false);
 		line.addComponent(relatedCalendar_cb);
@@ -280,6 +272,28 @@ public class ProjectTreeTable extends CustomComponent {
 		select2.setNullSelectionAllowed(false);
 		line.addComponent(select2);
 		// select2.select("Timed");
+		
+		Button updateSave = new Button("save");
+		updateSave.addClickListener(new ClickListener() {
+			@SuppressWarnings("unchecked")
+			public void buttonClick(ClickEvent event) {
+				//WW_TODO 下半段保存到数据库
+				Todo fieldGroupTodo = saveFieldGroupToDB();
+				//reflash current Item
+				copyBeanValueToContainer(hContainer,(BeanItem<Todo>)(scheduleEventFieldGroup.getItemDataSource()));
+				//刷新日历
+				main.refreshCalendarView();
+				Notification.show("保存成功", Notification.Type.HUMANIZED_MESSAGE);
+				//如果有外部流程，启动外部流程
+				if (fieldGroupTodo.getRelatedTask()) {
+					ViewToolManager
+							.showPopupWindow(new ActivityStartPopupWindow(
+									"1111"));
+				}
+			}
+		});
+		line.addComponent(updateSave);
+		line.setExpandRatio(updateSave, 1.0f);
 
 		bottom.addComponent(line);
 	}
@@ -322,6 +336,7 @@ public class ProjectTreeTable extends CustomComponent {
 		bottom.setSpacing(true);
 		bottom.addStyleName(Runo.LAYOUT_DARKER);
 		layout.addComponent(bottom);
+		layout.setExpandRatio(bottom, 0.3f);
 		return bottom;
 	}
 
@@ -351,6 +366,7 @@ public class ProjectTreeTable extends CustomComponent {
 		panel.addActionHandler(new KbdHandler());
 		// panel.setHeight(-1, Unit.PIXELS);
 		layout.addComponent(panel);
+		layout.setExpandRatio(panel, 0.7f);
 		panel.setContent(mainTreeTable);
 
 		// init tabletree
@@ -480,6 +496,7 @@ public class ProjectTreeTable extends CustomComponent {
 							ContextMenuItemClickEvent event) {
 						Item parentItem = hContainer.getItem(currentBeanItem);
 						Todo newTodo = todoService.newTodo();
+						newTodo.setProId(projectId);
 						BeanItem newbeanItem = new BeanItem<Todo>(newTodo);
 						Item nItem = hContainer.addItem(newbeanItem);
 
@@ -507,6 +524,7 @@ public class ProjectTreeTable extends CustomComponent {
 					public void contextMenuItemClicked(
 							ContextMenuItemClickEvent event) {
 						Todo newTodo = todoService.newTodo();
+						newTodo.setProId(projectId);
 						BeanItem newbeanItem = new BeanItem<Todo>(newTodo);
 						Item nItem = hContainer.addItem(newbeanItem);
 						hContainer.setChildrenAllowed(newbeanItem, false);
@@ -808,7 +826,7 @@ public class ProjectTreeTable extends CustomComponent {
 
 			Todo todo = tableItemToBean(beanItem);
 			// WW_TODO 保存是设置项目id和用户
-			if (todo.getProId() == null) {
+			if (!StringTool.judgeBlank(todo.getProId())) {
 				todo.setProId(projectId);
 			}
 			if (todo.getAssignedUser() == null) {
