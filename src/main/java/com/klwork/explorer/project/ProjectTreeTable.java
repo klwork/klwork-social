@@ -49,6 +49,7 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.CheckBox;
 import com.vaadin.ui.ComboBox;
 import com.vaadin.ui.Component;
@@ -56,9 +57,11 @@ import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.NativeSelect;
 import com.vaadin.ui.Notification;
 import com.vaadin.ui.Panel;
+import com.vaadin.ui.Table;
 import com.vaadin.ui.TableFieldFactory;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.TreeTable;
@@ -462,6 +465,8 @@ public class ProjectTreeTable extends CustomComponent {
 	}
 
 	private void setTableHeadDisplay(final TreeTable ttable) {
+		
+		
 		visibleColumnIds.add("name");
 		visibleColumnIds.add("priority");
 		visibleColumnIds.add("complete");
@@ -471,6 +476,7 @@ public class ProjectTreeTable extends CustomComponent {
 		visibleColumnIds.add("status");
 		visibleColumnIds.add("tags");
 		visibleColumnIds.add("type");
+		visibleColumnIds.add("edit");
 
 		visibleColumnLabels.add("标题");
 		visibleColumnLabels.add("！");
@@ -481,9 +487,15 @@ public class ProjectTreeTable extends CustomComponent {
 		visibleColumnLabels.add("状态");
 		visibleColumnLabels.add("标签");
 		visibleColumnLabels.add("类型");
+		visibleColumnLabels.add("操作");
+		
+		ttable.addGeneratedColumn("edit",
+                new ValueEditColumnGenerator());
 
 		ttable.setVisibleColumns(visibleColumnIds.toArray());
 		ttable.setColumnHeaders(visibleColumnLabels.toArray(new String[0]));
+		
+		
 	}
 
 	private void rightClickHandler(final TreeTable ttable) {
@@ -896,5 +908,20 @@ public class ProjectTreeTable extends CustomComponent {
 				}
 			}
 		}
+	}
+	
+	public class ValueEditColumnGenerator implements ColumnGenerator {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -5950078454864053894L;
+
+		@Override
+		public Object generateCell(Table source, Object itemId, Object columnId) {
+			Label label = new Label("edit");
+			return label;
+		}
+
 	}
 }
