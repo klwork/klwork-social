@@ -45,7 +45,12 @@ sqlMapConfig:
  name = #{name,jdbcType=VARCHAR}
  where id = #{id,jdbcType=VARCHAR}
 	</update>
-
+	
+  <!-- Delete -->	
+  <delete id="deleteProject" parameterType="string">
+    delete from project where id = #{id}
+  </delete>
+  
 	<!-- SELECT -->
 	<select id="selectProjectById" parameterType="string" resultMap="ProjectMap">
     select * from project where id = #{id,jdbcType=INTEGER}

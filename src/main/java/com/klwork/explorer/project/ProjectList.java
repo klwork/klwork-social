@@ -2,12 +2,16 @@ package com.klwork.explorer.project;
 
 import java.util.HashMap;
 
+import com.klwork.business.domain.model.Todo;
 import com.klwork.business.domain.service.ProjectService;
 import com.klwork.explorer.I18nManager;
 import com.klwork.explorer.ViewToolManager;
 import com.klwork.explorer.data.LazyLoadingContainer;
 import com.klwork.explorer.data.LazyLoadingQuery;
+import com.klwork.explorer.project.ProjectTreeTable.ValueEditColumnGenerator;
 import com.klwork.explorer.ui.Images;
+import com.klwork.explorer.ui.event.SubmitEvent;
+import com.klwork.explorer.ui.event.SubmitEventListener;
 import com.klwork.explorer.ui.handler.TableHandler;
 import com.klwork.explorer.ui.mainlayout.ExplorerLayout;
 import com.klwork.explorer.ui.util.ThemeImageColumnGenerator;
@@ -16,6 +20,7 @@ import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
+import com.vaadin.data.util.BeanItem;
 import com.vaadin.event.ItemClickEvent;
 import com.vaadin.event.FieldEvents.BlurEvent;
 import com.vaadin.event.FieldEvents.BlurListener;
@@ -25,6 +30,8 @@ import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
+import com.vaadin.ui.Table.ColumnGenerator;
+import com.vaadin.ui.themes.Reindeer;
 import com.vaadin.ui.themes.Runo;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.CheckBox;
@@ -46,8 +53,8 @@ public class ProjectList extends CustomComponent {
 	final HashMap<Object, HashMap<Object, Field>> fields = new HashMap<Object, HashMap<Object, Field>>();
 	final HashMap<Field, Object> itemIds = new HashMap<Field, Object>();
 	final HashMap<Field, String> projectNames = new HashMap<Field, String>();
-	// 传过来的项目id
-	private String projectId;
+	//当前table id
+	private String currentProjectId;
 	ProjectMain projectMain;
 	ProjectService projectService;
 
@@ -59,10 +66,10 @@ public class ProjectList extends CustomComponent {
 		setSizeFull();
 	}
 
-	public ProjectList(ProjectMain projectMain, String projectId) {
+/*	public ProjectList(ProjectMain projectMain, String projectId) {
 		this(projectMain);
 		this.projectId = projectId;
-	}
+	}*/
 
 	protected void init() {
 		VerticalLayout layout = new VerticalLayout();
@@ -181,12 +188,60 @@ public class ProjectList extends CustomComponent {
 		listTable.addGeneratedColumn("icon", new ThemeImageColumnGenerator(
 				Images.TASK_22));
 		listTable.setColumnWidth("icon", 22);
+		
+		
 
 		listTable.addContainerProperty("name", String.class, "");
-
+		listTable.addGeneratedColumn("edit", new ProjectEditColumnGenerator());
+		
 		TableHandler.setTableNoHead(listTable);
 		// 默认选中able处理
 		//TableHandler.disposeSelectTable(listTable, listContainer, projectId);
+	}
+	
+	public class ProjectEditColumnGenerator implements ColumnGenerator {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -5950078454864053894L;
+
+		@Override
+		public Object generateCell(final Table source, final Object itemId, Object columnId) {
+			
+			Button editButton = new Button("");
+			editButton.addStyleName(Reindeer.BUTTON_LINK);
+			editButton.setIcon(Images.EDIT);
+			//editButton.setDisableOnClick(true);
+			editButton.addClickListener(new ClickListener() {
+				public void buttonClick(ClickEvent event) {
+					// WW_TODO 后台进行修改
+					Item item = source.getItem(itemId);
+					String id = (String)item.getItemProperty("id").getValue();
+					NewProjectWindow newProjectWindow = new NewProjectWindow(id);
+					
+					
+					newProjectWindow.addListener(new SubmitEventListener() {
+					    private static final long serialVersionUID = 1L;
+					
+						@Override
+						protected void cancelled(SubmitEvent event) {
+							
+						}
+
+						@Override
+						protected void submitted(SubmitEvent event) {
+							if(event.getData() != null){
+							
+							}
+						}
+					});
+
+					ViewToolManager.showPopupWindow(newProjectWindow);
+				}
+			});
+			return editButton;
+		}
+
 	}
 	
 	private TextField getTfFromCache(Object itemId, Object propertyId) {
@@ -233,6 +288,8 @@ public class ProjectList extends CustomComponent {
 				Item item = listTable.getItem(event.getProperty().getValue());
 				if (item != null) {
 					String id = (String) item.getItemProperty("id").getValue();
+					//保存当前项目id
+					currentProjectId = id;
 					String name = (String) item.getItemProperty("name").getValue();
 					System.out.println(id);
 					if (id != null) {
@@ -271,7 +328,7 @@ public class ProjectList extends CustomComponent {
 			private static final long serialVersionUID = -8050449471041932066L;
 
 			public void buttonClick(ClickEvent event) {
-				final NewProjectWindow newProjectWindow = new NewProjectWindow();
+				final NewProjectWindow newProjectWindow = new NewProjectWindow(null);
 				ViewToolManager.showPopupWindow(newProjectWindow);
 			}
 		});

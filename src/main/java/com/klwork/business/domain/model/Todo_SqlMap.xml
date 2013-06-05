@@ -159,6 +159,12 @@ sqlMapConfig:
  where id_ = #{id,jdbcType=VARCHAR}
   </update>
 
+
+    <!-- Delete -->	
+  <delete id="deleteTodo" parameterType="string">
+    delete from todo where id_ = #{id}
+  </delete>
+  
   <!-- SELECT -->
   <select id="selectTodoById" parameterType="string" resultMap="TodoMap">
     select * from todo where id_ = #{id,jdbcType=INTEGER}

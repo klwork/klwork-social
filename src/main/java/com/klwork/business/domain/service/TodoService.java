@@ -34,11 +34,16 @@ public class TodoService {
 	private MyCalendarEventService myCalendarEventService;
 	
 	public void createTodo(Todo todo) {
+		saveTodoCalendar(todo);
 		rep.insert(todo);
 	}
 
 	public void deleteTodo(Todo todo) {
-		rep.delete(todo);
+		MyCalendarEvent event = queryRelatedEvent(todo);
+		if(event != null){
+			myCalendarEventService.deleteMyCalendarEvent(event);
+		}
+		rep.deleteById(todo.getId());
 	}
 
 	public int updateTodo(Todo todo) {
@@ -48,9 +53,7 @@ public class TodoService {
 
 	private void saveTodoCalendar(Todo todo) {
 		if(todo.getRelatedCalendar() && todo.getStartDate() != null && todo.getCompletionDate() != null){
-			MyCalendarEventQuery query = new MyCalendarEventQuery();
-			query.setRelatedTodo(todo.getId());
-			MyCalendarEvent myCalendarEvent = myCalendarEventService.findMyCalendarEventByQuery(query);
+			MyCalendarEvent myCalendarEvent = queryRelatedEvent(todo);
 			if(myCalendarEvent == null){
 				myCalendarEvent = new MyCalendarEvent();
 			}
@@ -71,6 +74,13 @@ public class TodoService {
 		}
 	}
 
+	public MyCalendarEvent queryRelatedEvent(Todo todo) {
+		MyCalendarEventQuery query = new MyCalendarEventQuery();
+		query.setRelatedTodo(todo.getId());
+		MyCalendarEvent myCalendarEvent = myCalendarEventService.findMyCalendarEventByQuery(query);
+		return myCalendarEvent;
+	}
+
 	public List<Todo> findTodoByQueryCriteria(TodoQuery query,
 			ViewPage<Todo> page) {
 		return rep.findTodoByQueryCriteria(query, page);
@@ -84,12 +94,12 @@ public class TodoService {
 		return rep.findTodoCountByQueryCriteria(query);
 	}
 	
-	public Todo creatTodoOfProject(String projectId) {
+/*	public Todo creatTodoOfProject(String projectId) {
 		Todo oEntity = rep.newTodo();
 		oEntity.setProId(projectId);
 		createTodo(oEntity);
 		return oEntity;
-	}
+	}*/
 	
 	/**
 	 * 
@@ -100,10 +110,10 @@ public class TodoService {
 		for (Iterator iterator = beanList.iterator(); iterator.hasNext();) {
 			Todo todo = (Todo) iterator.next();
 			todo.setLastUpdate(now);
-			if(findTodoById(todo.getId()) == null){
-				rep.insert(todo);
+			if(findTodoById(todo.getId()) == null){//数据库没有就新增
+				createTodo(todo);
 			}else{
-				rep.update(todo);
+				updateTodo(todo);
 			}
 			
 		}

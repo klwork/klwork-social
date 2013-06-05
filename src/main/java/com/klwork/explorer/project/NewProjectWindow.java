@@ -14,6 +14,7 @@
 package com.klwork.explorer.project;
 
 import com.klwork.business.domain.model.Project;
+import com.klwork.business.domain.service.ProjectService;
 import com.klwork.explorer.I18nManager;
 import com.klwork.explorer.Messages;
 import com.klwork.explorer.ViewToolManager;
@@ -48,9 +49,20 @@ public class NewProjectWindow extends PopupWindow {
 	private static final long serialVersionUID = 2288670048774518133L;
 
 	protected I18nManager i18nManager;
-
-	public NewProjectWindow() {
+	
+	// 传过来的项目id
+	private String currentProjectId;
+	//标识新增还是修改
+	boolean edit = false;
+	ProjectService projectService;
+	
+	public NewProjectWindow(String currentProjectId) {
 		this.i18nManager = ViewToolManager.getI18nManager();
+		this.projectService = ViewToolManager.getBean("projectService");
+		if(currentProjectId != null){
+			this.currentProjectId = currentProjectId;
+			edit = true;
+		}
 		setModal(true);
 		center();
 		setResizable(false);
@@ -83,11 +95,16 @@ public class NewProjectWindow extends PopupWindow {
 	}
 
 	private BeanItem getProjectBeanItem() {
-		Project p = new Project();
-		p.setDescription("");
-		p.setName("");
-		String userId = LoginHandler.getLoggedInUser().getId();
-		p.setOwnuser(userId);
+		Project p = null;
+		if(currentProjectId != null){
+			p = projectService.findProjectById(currentProjectId);
+		}else {
+			p = new Project();
+			p.setDescription("");
+			p.setName("");
+			String userId = LoginHandler.getLoggedInUser().getId();
+			p.setOwnuser(userId);
+		}
 		BeanItem pItem = new BeanItem<Project>(p);
 		return pItem;
 	}

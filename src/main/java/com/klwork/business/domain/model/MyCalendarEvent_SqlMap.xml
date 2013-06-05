@@ -87,6 +87,10 @@ sqlMapConfig:
  where id_ = #{id,jdbcType=VARCHAR}
   </update>
 
+  <delete id="deleteMyCalendarEvent" parameterType="string">
+    delete from my_calendar_event where ID_ = #{id} 
+  </delete>
+  
   <!-- SELECT -->
   <select id="selectMyCalendarEventById" parameterType="string" resultMap="MyCalendarEventMap">
     select * from my_calendar_event where id_ = #{id,jdbcType=INTEGER}

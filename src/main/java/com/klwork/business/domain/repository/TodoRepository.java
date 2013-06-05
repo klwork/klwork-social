@@ -44,7 +44,11 @@ public class TodoRepository extends MbDomainRepositoryImp<Todo, Serializable> {
 		return (Integer) getDao().selectOne("selectTodoCountByQueryCriteria",
 				query);
 	}
-
+	
+	/**
+	 * 生成一个新的todo,id也进行生成
+	 * @return
+	 */
 	public Todo newTodo() {
 		Todo oEntity = new Todo();
 		oEntity.setPriority(3);

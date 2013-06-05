@@ -30,10 +30,13 @@ public class NewProjectForm extends CustomComponent {
 	@PropertyId("description")
 	TextArea descriptionArea = null;
 	FormLayout layout = null;
-	
+
 	ProjectService projectService;
 
-	public NewProjectForm(final Window opener, final BeanItem<Project> projectItem) {
+	boolean edit = false;
+
+	public NewProjectForm(final Window opener,
+			final BeanItem<Project> projectItem) {
 		projectService = ViewToolManager.getBean("projectService");
 		this.i18nManager = ViewToolManager.getI18nManager();
 		layout = new FormLayout();
@@ -52,6 +55,23 @@ public class NewProjectForm extends CustomComponent {
 
 		HorizontalLayout buttonLayout = new HorizontalLayout();
 		buttonLayout.setWidth(100, Unit.PERCENTAGE);
+		if (projectItem.getBean().getId() != null) {
+			edit = true;
+		}
+		if (edit) {
+			Button deleteButton = new Button(
+					i18nManager.getMessage(Messages.BUTTON_DELETE));
+			buttonLayout.addComponent(deleteButton);
+			buttonLayout.setComponentAlignment(deleteButton,
+					Alignment.BOTTOM_RIGHT);
+			deleteButton.addClickListener(new ClickListener() {
+				public void buttonClick(ClickEvent event) {
+					handleDelete(projectItem);
+					opener.close();
+
+				}
+			});
+		}
 
 		Button createButton = new Button(
 				i18nManager.getMessage(Messages.BUTTON_CREATE));
@@ -76,7 +96,7 @@ public class NewProjectForm extends CustomComponent {
 				} catch (CommitException e) {
 					e.printStackTrace();
 				}
-				//System.out.println("提交完成" + projectItem);
+				// System.out.println("提交完成" + projectItem);
 			}
 		});
 
@@ -84,11 +104,28 @@ public class NewProjectForm extends CustomComponent {
 
 	/**
 	 * 保存到数据库
+	 * 
 	 * @param projectItem
 	 */
 	private void handleFormSubmit(BeanItem<Project> projectItem) {
-		if(projectItem != null){
-			projectService.createProject(projectItem.getBean());
+		if (projectItem != null) {
+			Project bean = projectItem.getBean();
+			if (bean.getId() == null) {
+				projectService.createProject(bean);
+			} else {
+				projectService.updateProject(bean);
+			}
+		}
+	};
+
+	/**
+	 * 保存到数据库
+	 * 
+	 * @param projectItem
+	 */
+	private void handleDelete(BeanItem<Project> projectItem) {
+		if (projectItem != null) {
+			projectService.deleteProject(projectItem.getBean());
 		}
 	};
 
