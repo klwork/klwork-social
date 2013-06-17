@@ -1,4 +1,4 @@
-package com.klwork.flow;
+package com.klwork.flow.act;
 
 import java.util.ArrayList;
 import java.util.Date;

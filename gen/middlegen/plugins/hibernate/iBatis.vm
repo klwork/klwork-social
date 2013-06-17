@@ -61,7 +61,7 @@ sqlMapConfig:
 
   <!-- SELECT -->
   <select id="select${table.destinationClassName}ById" parameterType="string" resultMap="${table.destinationClassName}Map">
-    select * from ${table.sqlName} where id_ = #{id,jdbcType=INTEGER}
+    select * from ${table.sqlName} where id_ = #{id,jdbcType=VARCHAR}
   </select>
   
   <select id="select${table.destinationClassName}ByQueryCriteria" parameterType="${table.package}#if($plugin.hibernateDomainObject.dir).${plugin.hibernateDomainObject.classDir}#end.${table.destinationClassName}Query" resultMap="${table.destinationClassName}Map">

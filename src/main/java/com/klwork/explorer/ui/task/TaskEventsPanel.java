@@ -127,6 +127,7 @@ public class TaskEventsPanel extends Panel {
   
   protected void addTaskEvents() {
     if(taskId != null) {
+      //WW_TODO 查询任务的实践
       taskEvents = taskService.getTaskEvents(taskId);
       for (final org.activiti.engine.task.Event event : taskEvents) {
         addTaskEventPicture(event, eventGrid);

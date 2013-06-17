@@ -53,7 +53,7 @@ sqlMapConfig:
   
 	<!-- SELECT -->
 	<select id="selectProjectById" parameterType="string" resultMap="ProjectMap">
-    select * from project where id = #{id,jdbcType=INTEGER}
+    select * from project where id = #{id,jdbcType=VARCHAR}
 	</select>
   
 	<select id="selectProjectByQueryCriteria" parameterType="com.klwork.business.domain.model.ProjectQuery" resultMap="ProjectMap">

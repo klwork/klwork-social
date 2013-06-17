@@ -148,8 +148,11 @@ public class TaskInvolvedPeopleComponent extends CustomComponent {
   }
   
   protected void populatePeopleGrid() {
+	//任务所属人
     initOwner();
+    //任务办理人
     initAssignee();
+    //其他任务相关人
     initInvolvedPeople();
   }
   
@@ -159,11 +162,12 @@ public class TaskInvolvedPeopleComponent extends CustomComponent {
   }
   
   protected UserDetailsComponent createOwnerComponent() {
+	//无所属人
     String roleMessage = task.getOwner() != null ? Messages.TASK_OWNER : Messages.TASK_NO_OWNER;
     return new UserDetailsComponent(
             task.getOwner(),
             i18nManager.getMessage(roleMessage),
-            i18nManager.getMessage(Messages.TASK_OWNER_TRANSFER),
+            i18nManager.getMessage(Messages.TASK_OWNER_TRANSFER),//转让
             new ChangeOwnershipListener(task, taskDetailPanel));
   }
   

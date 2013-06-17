@@ -14,7 +14,6 @@
 package com.klwork.explorer.ui.form;
 
 
-import com.klwork.explorer.ui.form.FormPropertiesForm.FormPropertiesEvent;
 import com.vaadin.ui.Component.Event;
 import com.vaadin.ui.Component.Listener;
 

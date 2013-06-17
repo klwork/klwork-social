@@ -26,7 +26,8 @@ import com.vaadin.ui.Component.Listener;
 public abstract class ConfirmationEventListener implements Listener {
 
   private static final long serialVersionUID = 1L;
-
+  
+  //关键
   public final void componentEvent(Event event) {
     if(event instanceof ConfirmationEvent) {
       ConfirmationEvent ce = (ConfirmationEvent) event;

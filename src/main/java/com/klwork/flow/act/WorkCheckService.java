@@ -1,11 +1,11 @@
-package com.klwork.flow;
+package com.klwork.flow.act;
 
 import java.util.Date;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 
-public class DateOverService implements JavaDelegate {
+public class WorkCheckService implements JavaDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) {
@@ -13,5 +13,9 @@ public class DateOverService implements JavaDelegate {
 		Long isbn = (Long) execution.getVariable("isbn");
 		System.out.println("xx received isbn " + isbn);
 		execution.setVariable("validatetime", new Date());*/
+		//检查通过
+		execution.setVariable("workChecked",true);
+		System.out.println("检查通过");
+		
 	}
 }

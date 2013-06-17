@@ -38,6 +38,7 @@ import com.klwork.explorer.ui.mainlayout.ExplorerLayout;
 import com.vaadin.data.Item;
 import com.vaadin.event.MouseEvents.ClickEvent;
 import com.vaadin.event.MouseEvents.ClickListener;
+import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
@@ -47,6 +48,7 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.VerticalLayout;
+import com.vaadin.ui.Table.ColumnHeaderMode;
 import com.vaadin.ui.themes.Reindeer;
 
 /**
@@ -114,7 +116,7 @@ public class TaskRelatedContentComponent extends VerticalLayout implements
 		Button addRelatedContentButton = new Button();
 		addRelatedContentButton.addStyleName(ExplorerLayout.STYLE_ADD);
 		addRelatedContentButton
-				.addListener(new com.vaadin.ui.Button.ClickListener() {
+				.addClickListener(new com.vaadin.ui.Button.ClickListener() {
 					private static final long serialVersionUID = 1L;
 
 					public void buttonClick(
@@ -161,16 +163,17 @@ public class TaskRelatedContentComponent extends VerticalLayout implements
 		addComponent(contentLayout);
 
 		table = new Table();
-		table.setWidth(100, UNITS_PERCENTAGE);
+		table.setWidth(100, Unit.PERCENTAGE);
 		table.addStyleName(ExplorerLayout.STYLE_RELATED_CONTENT_LIST);
 
 		// Invisible by default, only shown when attachments are present
 		table.setVisible(false);
-		table.setColumnHeaderMode(Table.COLUMN_HEADER_MODE_HIDDEN);
+		table.setColumnHeaderMode(Table.ColumnHeaderMode.HIDDEN);
 
 		addContainerProperties();
 
 		// Get the related content for this task
+		//WW_TODO 得到这个任务相关的附件
 		refreshTaskAttachments();
 		contentLayout.addComponent(table);
 	}
@@ -192,7 +195,7 @@ public class TaskRelatedContentComponent extends VerticalLayout implements
 		}
 
 		List<Attachment> attachments = null;
-		if (task.getProcessInstanceId() != null) {
+		if (task.getProcessInstanceId() != null) {//流程实体id不为空
 			attachments = (taskService.getProcessInstanceAttachments(task
 					.getProcessInstanceId()));
 		} else {
@@ -210,6 +213,7 @@ public class TaskRelatedContentComponent extends VerticalLayout implements
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void addAttachmentsToTable(List<Attachment> attachments) {
 		for (Attachment attachment : attachments) {
 			AttachmentRenderer renderer = attachmentRendererManager
@@ -222,7 +226,7 @@ public class TaskRelatedContentComponent extends VerticalLayout implements
 
 			Embedded deleteButton = new Embedded(null, Images.DELETE);
 			deleteButton.addStyleName(ExplorerLayout.STYLE_CLICKABLE);
-			deleteButton.addListener((ClickListener) new DeleteClickedListener(
+			deleteButton.addClickListener((ClickListener) new DeleteClickedListener(
 					attachment));
 			attachmentItem.getItemProperty("delete").setValue(deleteButton);
 		}

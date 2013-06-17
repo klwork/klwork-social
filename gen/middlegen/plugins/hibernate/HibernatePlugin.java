@@ -1599,7 +1599,7 @@ public class HibernatePlugin extends JavaPlugin {
 		map.put("entity", "0,2,1,");
 		map.put("service", "0,1,");
 		String s = map.get(type);
-		if(s != null && s.indexOf(gtype + ",") > 0){
+		if(s != null && s.indexOf(gtype + ",") >= 0){
 			return true;
 		}
 		return false;

@@ -59,6 +59,7 @@ public class UserDetailsComponent extends HorizontalLayout {
       
       if (userId != null) {
         user = identityService.createUserQuery().userId(userId).singleResult();
+        //skype 沟通工具 
         skypeId = identityService.getUserInfo(userId, Constants.USER_INFO_SKYPE);
       }
     }
@@ -82,7 +83,7 @@ public class UserDetailsComponent extends HorizontalLayout {
       if (user != null) {
         final Picture userPicture = identityService.getUserPicture(user.getId());
         if (userPicture != null) {
-         //WW_TODO 没有解决?用户图像
+         //WW_TODO 用户图像,怎么显示
           pictureResource = new StreamResource(new StreamSource() {        
             public InputStream getStream() {
               return userPicture.getInputStream();
@@ -105,6 +106,7 @@ public class UserDetailsComponent extends HorizontalLayout {
       // Add profile popup listener
       if (user != null) {
         picture.addStyleName(ExplorerLayout.STYLE_CLICKABLE);
+        //弹出用户详细
         picture.addClickListener(new com.vaadin.event.MouseEvents.ClickListener() {
           public void click(ClickEvent event) {
         	 // ViewToolManager.showProfilePopup(user.getId());
@@ -146,7 +148,7 @@ public class UserDetailsComponent extends HorizontalLayout {
       if (clickListener != null) {
         Button button = new Button(buttonCaption);
         button.addStyleName(Reindeer.BUTTON_SMALL);
-        button.addListener(clickListener);
+        button.addClickListener(clickListener);
         actionsLayout.addComponent(button);
       }
     }

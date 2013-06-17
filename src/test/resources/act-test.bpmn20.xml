@@ -8,7 +8,7 @@
 		<startEvent id="start1" activiti:initiator="applyUserId"></startEvent>
 		<sequenceFlow id="flow1" sourceRef="start1" targetRef="publishNeed"></sequenceFlow>
 
-		<userTask id="publishNeed" name="发布需求" activiti:assignee="${applyUserId}">
+		<userTask id="publishNeed" name="发布需求" activiti:assignee="${applyUserId}" activiti:formKey="crowdsourcing-publishNeed-form" activiti:inType="out">
 			<extensionElements>
 				<activiti:formProperty id="companyName" name="公司名"
 					type="string"></activiti:formProperty>
@@ -23,7 +23,7 @@
 		<sequenceFlow id="publishNeed-createApplication"
 			sourceRef="publishNeed" targetRef="createApplication"></sequenceFlow>
 
-		<serviceTask id="createApplication" activiti:class="com.klwork.flow.CreateApplicationTask" />
+		<serviceTask id="createApplication" activiti:class="com.klwork.flow.act.CreateApplicationTask" />
 		<sequenceFlow id="createApplication-preAudit" sourceRef="createApplication"
 			targetRef="preAudit"></sequenceFlow>
 
@@ -87,7 +87,7 @@
 			<userTask id="downMaterial" name="下载资料素材">
 				<extensionElements>
 					<activiti:taskListener event="create"
-						class="com.klwork.flow.ActTaskAssignmentListener" />
+						class="com.klwork.flow.act.ActTaskAssignmentListener" />
 				</extensionElements>
 			</userTask>
 			<sequenceFlow id="downMaterial-downMaterial" sourceRef="downMaterial"
@@ -96,7 +96,7 @@
 			<userTask id="uploadOwnWork" name="上传作品">
 				<extensionElements>
 					<activiti:taskListener event="create"
-						class="com.klwork.flow.ActTaskAssignmentListener" />
+						class="com.klwork.flow.act.ActTaskAssignmentListener" />
 					<activiti:formProperty id="workAttachment"
 						name="上传附件资料" type="string"></activiti:formProperty>
 				</extensionElements>
@@ -105,7 +105,7 @@
 				targetRef="checkWork"></sequenceFlow>
 
 			<serviceTask id="checkWork" name="系统检查作品"
-				activiti:class="com.klwork.flow.WorkCheckService"></serviceTask>
+				activiti:class="com.klwork.flow.act.WorkCheckService"></serviceTask>
 			<sequenceFlow id="checkWork-checkValidGateway"
 				sourceRef="checkWork" targetRef="checkValidGateway"></sequenceFlow>
 
@@ -125,7 +125,7 @@
 			sourceRef="uploadWork" targetRef="currentReviewWork"></sequenceFlow>
 
 		<serviceTask id="currentReviewWork" name="生成评审任务"
-			activiti:class="com.klwork.flow.CurrentReviewService"></serviceTask>
+			activiti:class="com.klwork.flow.act.CurrentReviewService"></serviceTask>
 		<sequenceFlow id="currentReviewWork-gradeWorks"
 			sourceRef="currentReviewWork" targetRef="gradeWorks"></sequenceFlow>
 
@@ -145,14 +145,14 @@
 			sourceRef="pubWinningList" targetRef="messageVictor"></sequenceFlow>
 		
 		<serviceTask id="messageVictor" name="通知用户领奖"
-			activiti:class="com.klwork.flow.MessageVictorTask"></serviceTask>
+			activiti:class="com.klwork.flow.act.MessageVictorTask"></serviceTask>
 		<sequenceFlow id="messageVictor-end" sourceRef="messageVictor"
 			targetRef="end"></sequenceFlow>
 
 		<endEvent id="end"></endEvent>
 
 		<serviceTask id="dealWithOverdue" name="系统处理时间到期"
-			activiti:class="com.klwork.flow.DateOverService"></serviceTask>
+			activiti:class="com.klwork.flow.act.DateOverService"></serviceTask>
 		<sequenceFlow id="dealWithOverdue-gradeWorks" sourceRef="dealWithOverdue"
 			targetRef="gradeWorks"></sequenceFlow>
 	</process>

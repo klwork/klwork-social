@@ -23,9 +23,12 @@ import com.klwork.explorer.I18nManager;
 import com.klwork.explorer.ViewManager;
 import com.klwork.explorer.project.MyCalendarView;
 import com.klwork.explorer.project.ProjectMain;
+import com.klwork.explorer.project.PublicProjectListPage;
 import com.klwork.explorer.ui.AbstractPage;
 import com.klwork.explorer.ui.mainlayout.MainLayout;
 import com.klwork.explorer.ui.task.InboxPage;
+import com.klwork.explorer.ui.task.InvolvedPage;
+import com.klwork.explorer.ui.task.QueuedPage;
 import com.klwork.explorer.ui.task.TaskMenuBar;
 import com.klwork.explorer.ui.task.TasksPage;
 import com.klwork.ui.VaadinView;
@@ -38,7 +41,7 @@ import com.vaadin.ui.Panel;
  */
 @Component
 @Scope("prototype")
-@VaadinView(value=MainView.NAME,cached=true)
+@VaadinView(value = MainView.NAME, cached = true)
 public class MainView extends Panel implements View {
 	// 为空的实体第一个显示？
 	public static final String NAME = "";
@@ -95,6 +98,11 @@ public class MainView extends Panel implements View {
 		switchView(new InboxPage(), ViewManager.MAIN_NAVIGATION_TASK,
 				TaskMenuBar.ENTRY_INBOX);
 	}
+	public void showInboxPage(String taskId) {
+		switchView(new InboxPage(taskId), ViewManager.MAIN_NAVIGATION_TASK,
+				TaskMenuBar.ENTRY_INBOX);
+		
+	}
 
 	@Override
 	public void enter(ViewChangeListener.ViewChangeEvent event) {
@@ -104,10 +112,16 @@ public class MainView extends Panel implements View {
 		// rolesLabel.setValue("");
 	}
 
+	// 代办任务
 	public void showTasksPage() {
 		switchView(new TasksPage(), ViewManager.MAIN_NAVIGATION_TASK,
 				TaskMenuBar.ENTRY_TASKS);
 
+	}
+
+	public void showTaskPage(String id) {
+		switchView(new TasksPage(id), ViewManager.MAIN_NAVIGATION_TASK,
+				TaskMenuBar.ENTRY_TASKS);
 	}
 
 	public void showTasksPage(String id) {
@@ -115,12 +129,44 @@ public class MainView extends Panel implements View {
 
 	}
 
+	/**
+	 * 显示我的项目
+	 */
 	public void showProjectPage() {
 		switchMainContent(new ProjectMain());
 	}
 
+	/**
+	 * 显示我的日程
+	 */
 	public void showMySchedulePage() {
 		switchMainContent(new MyCalendarView());
 	}
+
+	// 受邀任务
+	public void showInvolvedPage() {
+		switchView(new InvolvedPage(), ViewManager.MAIN_NAVIGATION_TASK,
+				TaskMenuBar.ENTRY_INVOLVED);
+	}
+
+	// 组任务
+	public void showQueuedPage(String groupId) {
+		switchView(new QueuedPage(groupId), ViewManager.MAIN_NAVIGATION_TASK,
+				TaskMenuBar.ENTRY_QUEUED);
+	}
+
+	public void showArchivedPage() {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	/**
+	 * 显示公共项目
+	 */
+	public void showPublicProject() {
+		switchMainContent(new PublicProjectListPage());
+	}
+
+
 
 }

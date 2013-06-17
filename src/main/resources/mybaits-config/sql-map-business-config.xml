@@ -12,5 +12,6 @@
 		<mapper resource="com/klwork/business/domain/model/TeamMembership_SqlMap.xml" />
 		<mapper resource="com/klwork/business/domain/model/Todo_SqlMap.xml" />
 		<mapper resource="com/klwork/business/domain/model/MyCalendarEvent_SqlMap.xml" />
+		<mapper resource="com/klwork/business/domain/model/OutsourcingProject_SqlMap.xml" />
 	</mappers>
 </configuration>

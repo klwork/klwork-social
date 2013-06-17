@@ -81,7 +81,7 @@ public class TaskMenuBar extends ToolBar {
     });
     inboxEntry.setCount(inboxCount);
     
-    // Tasks
+    // 我的Tasks
     LoggedInUser user = LoginHandler.getLoggedInUser();
     long tasksCount = new TasksListQuery().size(); 
     ToolbarEntry tasksEntry = addToolbarEntry(ENTRY_TASKS, i18nManager.getMessage(Messages.TASK_MENU_TASKS), new ToolbarCommand() {
@@ -91,7 +91,7 @@ public class TaskMenuBar extends ToolBar {
     });
     tasksEntry.setCount(tasksCount);
     
-    // Queued
+    // 队列
     List<Group> groups = identityService.createGroupQuery().groupMember(user.getId()).list();
     ToolbarPopupEntry queuedItem = addPopupEntry(ENTRY_QUEUED, (i18nManager.getMessage(Messages.TASK_MENU_QUEUED)));
     long queuedCount = 0;
@@ -102,6 +102,7 @@ public class TaskMenuBar extends ToolBar {
         queuedItem.addMenuItem(group.getName() + " (" + groupCount + ")", new ToolbarCommand() {
           public void toolBarItemSelected() {
             //viewManager.showQueuedPage(group.getId());
+        	  ViewToolManager.getMainView().showQueuedPage(group.getId());
           }
         });
         
@@ -114,6 +115,7 @@ public class TaskMenuBar extends ToolBar {
     long involvedCount = new InvolvedListQuery().size(); 
     ToolbarEntry involvedEntry = addToolbarEntry(ENTRY_INVOLVED, i18nManager.getMessage(Messages.TASK_MENU_INVOLVED), new ToolbarCommand() {
       public void toolBarItemSelected() {
+    	  ViewToolManager.getMainView().showInvolvedPage();
         //viewManager.showInvolvedPage();
       }
     });
@@ -125,6 +127,7 @@ public class TaskMenuBar extends ToolBar {
     ToolbarEntry archivedEntry = addToolbarEntry(ENTRY_ARCHIVED, i18nManager.getMessage(Messages.TASK_MENU_ARCHIVED), new ToolbarCommand() {
       public void toolBarItemSelected() {
         //viewManager.showArchivedPage();
+    	ViewToolManager.getMainView().showArchivedPage();
       }
     });
     archivedEntry.setCount(archivedCount);
@@ -137,10 +140,10 @@ public class TaskMenuBar extends ToolBar {
     newCaseButton.setIcon(Images.TASK_16);
     addButton(newCaseButton);
     
-    newCaseButton.addListener(new ClickListener() {
+    newCaseButton.addClickListener(new ClickListener() {
       public void buttonClick(ClickEvent event) {
-        //NewCasePopupWindow newTaskPopupWindow = new NewCasePopupWindow();
-        //viewManager.showPopupWindow(newTaskPopupWindow);
+        NewTaskPopupWindow newTaskPopupWindow = new NewTaskPopupWindow();
+        ViewToolManager.showPopupWindow(newTaskPopupWindow);
       }
     });
   }

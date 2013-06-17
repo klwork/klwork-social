@@ -22,10 +22,13 @@ import org.activiti.engine.form.FormType;
 
 import com.klwork.explorer.ViewToolManager;
 import com.vaadin.data.Validator.InvalidValueException;
+import com.vaadin.data.fieldgroup.FieldGroup;
+import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Field;
 import com.vaadin.ui.Form;
+import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.VerticalLayout;
 
 
@@ -43,7 +46,8 @@ public class FormPropertiesComponent extends VerticalLayout {
   protected List<FormProperty> formProperties;
   protected Map<FormProperty, Component> propertyComponents;
   
-  protected Form form;
+  protected FormLayout form;
+  FieldGroup binder = new FieldGroup();
   
   public FormPropertiesComponent() {
     this.formPropertyRendererManager = ViewToolManager.getFormPropertyRendererManager();
@@ -58,8 +62,8 @@ public class FormPropertiesComponent extends VerticalLayout {
   
   public void setFormProperties(List<FormProperty> formProperties) {
     this.formProperties = formProperties;
-    
-    form.removeAllProperties();
+    form.removeAllComponents();
+    //form.removeAllProperties();
     
     // Clear current components in the grid
     if(formProperties != null) {
@@ -69,7 +73,7 @@ public class FormPropertiesComponent extends VerticalLayout {
         Field editorComponent = renderer.getPropertyField(formProperty);
         if(editorComponent != null) {
           // Get label for editor component.
-          form.addField(formProperty.getId(), editorComponent);
+          form.addComponent( editorComponent);
         }
       }
     }
@@ -83,12 +87,17 @@ public class FormPropertiesComponent extends VerticalLayout {
    */
   public Map<String, String> getFormPropertyValues() throws InvalidValueException {
     // Commit the form to ensure validation is executed
-    form.commit();
+	  try {
+		binder.commit();
+	} catch (CommitException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
     
     Map<String, String> formPropertyValues = new HashMap<String, String>();
     
     // Get values from fields defined for each form property
-    for(FormProperty formProperty : formProperties) {
+    /*for(FormProperty formProperty : formProperties) {
       if(formProperty.isWritable()) {
         Field field = form.getField(formProperty.getId());
         FormPropertyRenderer renderer = getRenderer(formProperty);
@@ -96,7 +105,7 @@ public class FormPropertiesComponent extends VerticalLayout {
         
         formPropertyValues.put(formProperty.getId(), fieldValue);
       }
-    }
+    }*/
     return formPropertyValues;
   }
   
@@ -108,9 +117,8 @@ public class FormPropertiesComponent extends VerticalLayout {
   }
   
   protected void initForm() {
-    form = new Form();
+    form = new FormLayout();
     form.setSizeFull();
-    
     addComponent(form);
     setComponentAlignment(form, Alignment.TOP_CENTER);
   }

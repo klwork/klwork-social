@@ -24,6 +24,7 @@ import com.klwork.explorer.I18nManager;
 import com.klwork.explorer.ViewToolManager;
 import com.klwork.explorer.ui.mainlayout.ExplorerLayout;
 import com.vaadin.data.Validator.InvalidValueException;
+import com.vaadin.server.Sizeable.Unit;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -108,7 +109,7 @@ public class FormPropertiesForm extends VerticalLayout {
     
     HorizontalLayout buttons = new HorizontalLayout();
     buttons.setSpacing(true);
-    buttons.setWidth(100, UNITS_PERCENTAGE);
+    buttons.setWidth(100, Unit.PERCENTAGE);
     buttons.addStyleName(ExplorerLayout.STYLE_DETAIL_BLOCK);
     buttons.addComponent(submitFormButton);
     buttons.setComponentAlignment(submitFormButton, Alignment.BOTTOM_RIGHT);
@@ -128,7 +129,7 @@ public class FormPropertiesForm extends VerticalLayout {
   }
   
   protected void initListeners() {
-    submitFormButton.addListener(new ClickListener() {
+    submitFormButton.addClickListener(new ClickListener() {
       
       private static final long serialVersionUID = -6091586145870618870L;
     
@@ -136,6 +137,7 @@ public class FormPropertiesForm extends VerticalLayout {
         // Extract the submitted values from the form. Throws exception when validation fails.
         try {
           Map<String, String> formProperties = formPropertiesComponent.getFormPropertyValues();
+          //在哪里？捕获
           fireEvent(new FormPropertiesEvent(FormPropertiesForm.this, FormPropertiesEvent.TYPE_SUBMIT, formProperties));
           submitFormButton.setComponentError(null);
         } catch(InvalidValueException ive) {
@@ -144,7 +146,7 @@ public class FormPropertiesForm extends VerticalLayout {
       }
     });
     
-    cancelFormButton.addListener(new ClickListener() {
+    cancelFormButton.addClickListener(new ClickListener() {
       
       private static final long serialVersionUID = -8980500491522472381L;
 
@@ -165,38 +167,5 @@ public class FormPropertiesForm extends VerticalLayout {
     container.addComponent(emptySpace);
   }
   
-  /**
-   * Event indicating a form has been submitted or cancelled. When submitted,
-   * the values of the form-properties are available.
-   * 
-   * @author Frederik Heremans
-   */
-  public class FormPropertiesEvent extends Event {
-
-    private static final long serialVersionUID = -410814526942034125L;
-    
-    public static final String TYPE_SUBMIT = "SUBMIT";
-    public static final String TYPE_CANCEL = "CANCEL";
-    
-    private String type;
-    private Map<String, String> formProperties;
-    
-    public FormPropertiesEvent(Component source, String type) {
-      super(source);
-      this.type = type;
-    }
-    
-    public FormPropertiesEvent(Component source, String type, Map<String, String> formProperties) {
-      this(source, type);
-      this.formProperties = formProperties;
-    }
-    
-    public String getType() {
-      return type;
-    }
-    
-    public Map<String, String> getFormProperties() {
-      return formProperties;
-    }
-  }
+  
 }

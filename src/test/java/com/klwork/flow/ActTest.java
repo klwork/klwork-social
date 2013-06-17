@@ -81,7 +81,7 @@ public class ActTest extends AbstractKlworkTestCase {
 		Task task = taskService.createTaskQuery().taskAssignee("ww").singleResult();
 		assertNotNull(task);
 		taskService.claim(task.getId(), "ww");
-
+		//UserTaskXMLConverter
 		
 		//完成填写需求的任务
 		Map<String, Object> variables = new HashMap<String, Object>();

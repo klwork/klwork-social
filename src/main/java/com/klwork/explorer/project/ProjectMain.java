@@ -134,7 +134,7 @@ public class ProjectMain extends CustomComponent {
 	}
 	
 	private void initLeft(final HorizontalSplitPanel split) {
-		Panel leftPanel = new Panel("项目管理");
+		Panel leftPanel = new Panel();
 		VerticalLayout l = new VerticalLayout();
 		leftPanel.setContent(l);
 		leftPanel.setSizeFull();
@@ -149,7 +149,8 @@ public class ProjectMain extends CustomComponent {
 		accordion.setSizeFull();
 		l.addComponent(accordion);
 		
-		accordion.addTab(new ProjectList(this), "main");
+		accordion.addTab(new ProjectList(this), "项目管理");
+		//accordion.set
 		accordion.addTab(new Label("过滤"), "过滤");
 	}
 

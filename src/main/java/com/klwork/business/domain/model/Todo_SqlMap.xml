@@ -167,7 +167,7 @@ sqlMapConfig:
   
   <!-- SELECT -->
   <select id="selectTodoById" parameterType="string" resultMap="TodoMap">
-    select * from todo where id_ = #{id,jdbcType=INTEGER}
+    select * from todo where id_ = #{id,jdbcType=VARCHAR}
   </select>
   
   <select id="selectTodoByQueryCriteria" parameterType="com.klwork.business.domain.model.TodoQuery" resultMap="TodoMap">

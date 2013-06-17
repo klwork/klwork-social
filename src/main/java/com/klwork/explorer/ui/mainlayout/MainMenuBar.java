@@ -104,7 +104,7 @@ public class MainMenuBar extends HorizontalLayout {
 
 		Button processButton = addMenuButton(
 				ViewManager.MAIN_NAVIGATION_PROCESS,
-				i18nManager.getMessage(Messages.MAIN_MENU_PROCESS),
+				"公共项目",
 				Images.MAIN_MENU_PROCESS, false, 80);
 		processButton
 				.addClickListener(new ShowProcessDefinitionsClickListener());
@@ -266,19 +266,17 @@ public class MainMenuBar extends HorizontalLayout {
 
 	private class ShowProcessDefinitionsClickListener implements ClickListener {
 		public void buttonClick(ClickEvent event) {
-			// xx.getViewManager().showDeployedProcessDefinitionPage();
+			ViewToolManager.getMainView().showPublicProject();
 		}
 	}
 
 	private class ShowReportsClickListener implements ClickListener {
 		public void buttonClick(ClickEvent event) {
-			// xx.getViewManager().showRunReportPage();
 		}
 	}
 
 	private class ShowManagementClickListener implements ClickListener {
 		public void buttonClick(ClickEvent event) {
-			// xx.getViewManager().showDatabasePage();
 		}
 	}
 }

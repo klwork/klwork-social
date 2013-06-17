@@ -19,9 +19,12 @@ import org.activiti.engine.ProcessEngines;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.form.TaskFormData;
+import org.activiti.engine.impl.persistence.entity.TaskEntity;
+import org.activiti.engine.impl.task.TaskDefinition;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.task.Task;
 
+import com.klwork.common.utils.StringTool;
 import com.klwork.explorer.I18nManager;
 import com.klwork.explorer.Messages;
 import com.klwork.explorer.NotificationManager;
@@ -29,15 +32,16 @@ import com.klwork.explorer.ViewToolManager;
 import com.klwork.explorer.ui.Images;
 import com.klwork.explorer.ui.custom.DetailPanel;
 import com.klwork.explorer.ui.custom.PrettyTimeLabel;
+import com.klwork.explorer.ui.form.FormPropertiesEvent;
 import com.klwork.explorer.ui.form.FormPropertiesEventListener;
 import com.klwork.explorer.ui.form.FormPropertiesForm;
-import com.klwork.explorer.ui.form.FormPropertiesForm.FormPropertiesEvent;
 import com.klwork.explorer.ui.mainlayout.ExplorerLayout;
 import com.klwork.explorer.ui.task.listener.ClaimTaskClickListener;
 import com.klwork.ui.security.LoginHandler;
 import com.vaadin.event.LayoutEvents.LayoutClickEvent;
 import com.vaadin.event.LayoutEvents.LayoutClickListener;
 import com.vaadin.shared.ui.MarginInfo;
+import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -64,6 +68,9 @@ public class TaskDetailPanel extends DetailPanel {
 
   protected Task task;
   
+  //protected TaskEntity taskEntity;
+  TaskDefinition taskDefinition;
+  
   // Services
   protected transient TaskService taskService;
   protected transient FormService formService;
@@ -84,12 +91,14 @@ public class TaskDetailPanel extends DetailPanel {
   public TaskDetailPanel(Task task, TaskPage taskPage) {
     this.task = task;
     this.taskPage = taskPage;
-    
     this.taskService = ProcessEngines.getDefaultProcessEngine().getTaskService();
     this.formService = ProcessEngines.getDefaultProcessEngine().getFormService();
     this.repositoryService = ProcessEngines.getDefaultProcessEngine().getRepositoryService();
     this.i18nManager = ViewToolManager.getI18nManager();
     this.notificationManager = ViewToolManager.getNotificationManager();
+    if( task != null && task instanceof TaskEntity && task.getProcessDefinitionId() != null){
+    	taskDefinition = taskService.queryTaskDefinition(task);
+    }
   }
   
   @Override
@@ -108,26 +117,37 @@ public class TaskDetailPanel extends DetailPanel {
     setDetailContainer(centralLayout);
     
     initHeader();
-    //时间描写和优先级描叙
-    initDescriptionAndClaimButton();
-    //任务属于流程
-    initProcessLink();
-    //当前任务为某个任务的子任务
-    initParentTaskLink();
-    //任务参与者
-    initPeopleDetails();
-    //子任务
-    initSubTasks();
-    //关联的任务
+    if(judgeInnerTask()){
+	    //时间描写和优先级描叙
+	    initDescriptionAndClaimButton();
+	    //任务属于流程
+	    initProcessLink();
+    }
+    if(judgeInnerTask()){//非外部任务
+	    //当前任务为某个任务的子任务
+	    initParentTaskLink();
+	    //任务参与者
+	    initPeopleDetails();
+	    //子任务
+	    initSubTasks();
+    
+    //关联的任务的内容
     initRelatedContent();
+    }
     //任务的orm
     initTaskForm();
     
   }
+
+public boolean judgeInnerTask() {
+	if(taskDefinition == null)
+		return true;
+	return taskDefinition !=null && (!"out".equals(taskDefinition.getInType()));
+}
   
   protected void initHeader() {
     GridLayout taskDetails = new GridLayout(2, 2);
-    taskDetails.setWidth(100, UNITS_PERCENTAGE);
+    taskDetails.setWidth(100, Unit.PERCENTAGE);
     taskDetails.addStyleName(ExplorerLayout.STYLE_TITLE_BLOCK);
     taskDetails.setSpacing(true);
     taskDetails.setMargin(new MarginInfo(false, false, true, false));
@@ -166,7 +186,7 @@ public class TaskDetailPanel extends DetailPanel {
   protected void initDescriptionAndClaimButton() {
     HorizontalLayout layout = new HorizontalLayout();
     layout.addStyleName(ExplorerLayout.STYLE_DETAIL_BLOCK);
-    layout.setWidth(100, UNITS_PERCENTAGE);
+    layout.setWidth(100, Unit.PERCENTAGE);
     layout.setSpacing(true);
     centralLayout.addComponent(layout);
     
@@ -178,7 +198,7 @@ public class TaskDetailPanel extends DetailPanel {
 	  //任务的指定人不是当前人，candidateUser为当前人
     if(!isCurrentUserAssignee() && canUserClaimTask()) {
       claimButton = new Button(i18nManager.getMessage(Messages.TASK_CLAIM));
-      claimButton.addListener(new ClaimTaskClickListener(task.getId(), taskService));
+      claimButton.addClickListener(new ClaimTaskClickListener(task.getId(), taskService));
       layout.addComponent(claimButton);
       layout.setComponentAlignment(claimButton, Alignment.MIDDLE_LEFT);
       
@@ -187,7 +207,7 @@ public class TaskDetailPanel extends DetailPanel {
 
   protected void initDescription(HorizontalLayout layout) {
     final CssLayout descriptionLayout = new CssLayout();
-    descriptionLayout.setWidth(100, UNITS_PERCENTAGE);
+    descriptionLayout.setWidth(100, Unit.PERCENTAGE);
     layout.addComponent(descriptionLayout);
     layout.setExpandRatio(descriptionLayout, 1.0f);
     layout.setComponentAlignment(descriptionLayout, Alignment.MIDDLE_LEFT);
@@ -202,7 +222,7 @@ public class TaskDetailPanel extends DetailPanel {
     descriptionLabel.addStyleName(ExplorerLayout.STYLE_CLICKABLE);
     descriptionLayout.addComponent(descriptionLabel);
     
-    descriptionLayout.addListener(new LayoutClickListener() {
+    descriptionLayout.addLayoutClickListener(new LayoutClickListener() {
       public void layoutClick(LayoutClickEvent event) {
         if (event.getClickedComponent() != null && event.getClickedComponent().equals(descriptionLabel)) {
           // layout for textarea + ok button
@@ -213,7 +233,7 @@ public class TaskDetailPanel extends DetailPanel {
           final TextArea descriptionTextArea = new TextArea();
           //设置为空时的显示类容
           descriptionTextArea.setNullRepresentation("");
-          descriptionTextArea.setWidth(100, UNITS_PERCENTAGE);
+          descriptionTextArea.setWidth(100, Unit.PERCENTAGE);
           descriptionTextArea.setValue(task.getDescription());
           editLayout.addComponent(descriptionTextArea);
           
@@ -226,7 +246,7 @@ public class TaskDetailPanel extends DetailPanel {
           descriptionLayout.replaceComponent(descriptionLabel, editLayout);
           
           // When OK is clicked -> update task data + ui
-          okButton.addListener(new ClickListener() {
+          okButton.addClickListener(new ClickListener() {
             public void buttonClick(ClickEvent event) {
               // Update data
               task.setDescription(descriptionTextArea.getValue().toString());
@@ -278,7 +298,7 @@ public class TaskDetailPanel extends DetailPanel {
       Button showParentTaskButton = new Button(i18nManager.getMessage(
               Messages.TASK_SUBTASK_OF_PARENT_TASK, parentTask.getName()));
       showParentTaskButton.addStyleName(Reindeer.BUTTON_LINK);
-      showParentTaskButton.addListener(new ClickListener() {
+      showParentTaskButton.addClickListener(new ClickListener() {
         public void buttonClick(ClickEvent event) {
           //viewManager.showTaskPage(parentTask.getId());
         }
@@ -307,20 +327,48 @@ public class TaskDetailPanel extends DetailPanel {
   
   protected void initTaskForm() {
     // Check if task requires a form
+	  //task.getT
     TaskFormData formData = formService.getTaskFormData(task.getId());
+    
+    if(formData != null && StringTool.judgeBlank(formData.getFormKey())){
+    	TaskForm c = TaskFormFactory.create(formData.getFormKey(),task);
+    	centralLayout.addComponent(c);
+    	c.addListener(new FormPropertiesEventListener() {
+            private static final long serialVersionUID = -3893467157397686736L;
+            
+            @Override
+            protected void handleFormSubmit(FormPropertiesEvent event) {
+              //流程变量，也提交来了
+              Map<String, String> properties = event.getFormProperties();
+              System.out.println(properties);
+              /*formService.submitTaskFormData(task.getId(), properties);
+              notificationManager.showInformationNotification(Messages.TASK_COMPLETED, task.getName());
+              taskPage.refreshSelectNext();*/
+            }
+            
+            @Override
+            protected void handleFormCancel(FormPropertiesEvent event) {
+              // Clear the form values 
+              taskForm.clear();
+            }
+          });
+    	
+    	return;
+    }
+    //formService.getS
     if(formData != null && formData.getFormProperties() != null && formData.getFormProperties().size() > 0) {
       taskForm = new FormPropertiesForm();
       taskForm.setSubmitButtonCaption(i18nManager.getMessage(Messages.TASK_COMPLETE));
       taskForm.setCancelButtonCaption(i18nManager.getMessage(Messages.TASK_RESET_FORM));
       taskForm.setFormHelp(i18nManager.getMessage(Messages.TASK_FORM_HELP));
       taskForm.setFormProperties(formData.getFormProperties());
-      
+      //WW_TODO 任务form监听器
       taskForm.addListener(new FormPropertiesEventListener() {
-        
         private static final long serialVersionUID = -3893467157397686736L;
-
+        
         @Override
         protected void handleFormSubmit(FormPropertiesEvent event) {
+          //流程变量，也提交来了
           Map<String, String> properties = event.getFormProperties();
           formService.submitTaskFormData(task.getId(), properties);
           notificationManager.showInformationNotification(Messages.TASK_COMPLETED, task.getName());
@@ -344,12 +392,12 @@ public class TaskDetailPanel extends DetailPanel {
       
       CssLayout buttonLayout = new CssLayout();
       buttonLayout.addStyleName(ExplorerLayout.STYLE_DETAIL_BLOCK);
-      buttonLayout.setWidth(100, UNITS_PERCENTAGE);
+      buttonLayout.setWidth(100, Unit.PERCENTAGE);
       centralLayout.addComponent(buttonLayout);
       
       completeButton = new Button(i18nManager.getMessage(Messages.TASK_COMPLETE));
       
-      completeButton.addListener(new ClickListener() {
+      completeButton.addClickListener(new ClickListener() {
         
         private static final long serialVersionUID = 1L;
 
@@ -389,7 +437,7 @@ public class TaskDetailPanel extends DetailPanel {
   }
   
   protected void addEmptySpace(ComponentContainer container) {
-    Label emptySpace = new Label("&nbsp;", Label.CONTENT_XHTML);
+    Label emptySpace = new Label("&nbsp;", ContentMode.HTML);
     emptySpace.setSizeUndefined();
     container.addComponent(emptySpace);
   }

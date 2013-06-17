@@ -20,6 +20,8 @@ import com.klwork.explorer.Messages;
 import com.klwork.explorer.ViewToolManager;
 import com.klwork.explorer.ui.event.ConfirmationEvent;
 import com.klwork.explorer.ui.event.ConfirmationEventListener;
+import com.vaadin.server.Sizeable.Unit;
+import com.vaadin.shared.ui.label.ContentMode;
 import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
@@ -45,9 +47,12 @@ public class ConfirmationDialogPopupWindow extends PopupWindow {
   protected Button noButton;
   
   public ConfirmationDialogPopupWindow(String title, String description) {
-    setWidth(400, UNITS_PIXELS);
+    setWidth(400,Unit.PIXELS);
     setModal(true);
     setResizable(false);
+    setHeight("30%");
+	setWidth("50%");
+	center();
     
     addStyleName(Reindeer.PANEL_LIGHT);
     
@@ -86,7 +91,7 @@ public class ConfirmationDialogPopupWindow extends PopupWindow {
     yesButton = new Button(i18nManager.getMessage(Messages.CONFIRMATION_DIALOG_YES));
     layout.addComponent(yesButton, 0, 1);
     layout.setComponentAlignment(yesButton, Alignment.BOTTOM_RIGHT);
-    yesButton.addListener(new ClickListener() {
+    yesButton.addClickListener(new ClickListener() {
       private static final long serialVersionUID = 1L;
       public void buttonClick(ClickEvent event) {
         close();
@@ -97,7 +102,7 @@ public class ConfirmationDialogPopupWindow extends PopupWindow {
     noButton = new Button(i18nManager.getMessage(Messages.CONFIRMATION_DIALOG_NO));
     layout.addComponent(noButton, 1, 1);
     layout.setComponentAlignment(noButton, Alignment.BOTTOM_LEFT);
-    noButton.addListener(new ClickListener() {
+    noButton.addClickListener(new ClickListener() {
       private static final long serialVersionUID = 1L;
       public void buttonClick(ClickEvent event) {
         close();
@@ -107,7 +112,7 @@ public class ConfirmationDialogPopupWindow extends PopupWindow {
   }
 
   protected void initLabel(String description) {
-    descriptionLabel = new Label(description, Label.CONTENT_XHTML);
+    descriptionLabel = new Label(description, ContentMode.HTML);
     descriptionLabel.setSizeFull();
     layout.addComponent(descriptionLabel, 0, 0 , 1, 0);
     layout.setRowExpandRatio(0, 1.0f);

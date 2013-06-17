@@ -1,4 +1,4 @@
-package com.klwork.flow;
+package com.klwork.flow.act;
 
 import java.io.Serializable;
 

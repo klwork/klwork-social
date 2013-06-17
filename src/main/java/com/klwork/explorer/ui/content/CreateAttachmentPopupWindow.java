@@ -37,6 +37,7 @@ import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.CellStyleGenerator;
+import com.vaadin.ui.Table.ColumnHeaderMode;
 import com.vaadin.ui.themes.Reindeer;
 
 /**
@@ -67,8 +68,8 @@ public class CreateAttachmentPopupWindow extends PopupWindow {
 				.getTaskService();
 
 		setCaption(i18nManager.getMessage(Messages.RELATED_CONTENT_ADD));
-		setWidth(700, UNITS_PIXELS);
-		setHeight(430, UNITS_PIXELS);
+		setWidth(700, Unit.PIXELS);
+		setHeight(430, Unit.PIXELS);
 		center();
 		setModal(true);
 		addStyleName(Reindeer.WINDOW_LIGHT);
@@ -80,7 +81,7 @@ public class CreateAttachmentPopupWindow extends PopupWindow {
 		setContent(layout);
 
 		initTable();
-
+		// 右边的显示的附件上传详细
 		detailLayout = new GridLayout(1, 2);
 		detailLayout.setSizeFull();
 		detailLayout.setMargin(true);
@@ -110,7 +111,7 @@ public class CreateAttachmentPopupWindow extends PopupWindow {
 				i18nManager.getMessage(Messages.RELATED_CONTENT_CREATE));
 		detailLayout.addComponent(okButton, 0, 1);
 		okButton.setEnabled(false);
-		okButton.addListener(new ClickListener() {
+		okButton.addClickListener(new ClickListener() {
 
 			private static final long serialVersionUID = 1L;
 
@@ -125,12 +126,12 @@ public class CreateAttachmentPopupWindow extends PopupWindow {
 	protected void initTable() {
 		attachmentTypes = new Table();
 		attachmentTypes.setSizeUndefined();
-		attachmentTypes.setColumnHeaderMode(Table.COLUMN_HEADER_MODE_HIDDEN);
+		attachmentTypes.setColumnHeaderMode(ColumnHeaderMode.HIDDEN);
 		attachmentTypes.setSelectable(true);
 		attachmentTypes.setImmediate(true);
 		attachmentTypes.setNullSelectionAllowed(false);
-		attachmentTypes.setWidth(200, UNITS_PIXELS);
-		attachmentTypes.setHeight(100, UNITS_PERCENTAGE);
+		attachmentTypes.setWidth(200, Unit.PIXELS);
+		attachmentTypes.setHeight(100, Unit.PERCENTAGE);
 
 		attachmentTypes.setCellStyleGenerator(new CellStyleGenerator() {
 			private static final long serialVersionUID = 1L;
@@ -168,7 +169,7 @@ public class CreateAttachmentPopupWindow extends PopupWindow {
 		}
 
 		// Add listener to show editor component
-		attachmentTypes.addListener(new ValueChangeListener() {
+		attachmentTypes.addValueChangeListener(new ValueChangeListener() {
 
 			private static final long serialVersionUID = 1L;
 
@@ -207,6 +208,7 @@ public class CreateAttachmentPopupWindow extends PopupWindow {
 	protected void saveAttachment() {
 		try {
 			// Creation and persistence of attachment is done in editor
+			//跟踪代码里面，会进行附件的持久化
 			Attachment attachment = currentEditor.getAttachment();
 
 			fireEvent(new SubmitEvent(this, SubmitEvent.SUBMITTED, attachment));

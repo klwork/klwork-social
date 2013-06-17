@@ -203,6 +203,7 @@ public class EditTodoPopupWindow extends PopupWindow {
 				 * (fieldGroupTodo.getRelatedTask()) { ViewToolManager
 				 * .showPopupWindow(new ActivityStartPopupWindow( "1111")); }
 				 */
+				if(fieldGroupTodo.getRelatedTask()) { ViewToolManager.showPopupWindow(new ActivityStartPopupWindow( "1111")); }
 			}
 		});
 		line.addComponent(updateSave);

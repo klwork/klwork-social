@@ -159,6 +159,11 @@ public abstract class TaskPage extends AbstractTablePage {
   
   protected abstract LazyLoadingQuery createLazyLoadingQuery();
   
-  protected abstract UriFragment getUriFragment(String taskId);
+  protected UriFragment getUriFragment(String taskId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+  
+  //protected abstract UriFragment getUriFragment(String taskId);
   
 }

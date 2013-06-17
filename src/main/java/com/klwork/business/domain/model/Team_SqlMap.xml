@@ -34,7 +34,7 @@ sqlMapConfig:
 
   <!-- SELECT -->
   <select id="selectTeamById" parameterType="string" resultMap="TeamMap">
-    select * from team where ID_ = #{id,jdbcType=INTEGER}
+    select * from team where ID_ = #{id,jdbcType=VARCHAR}
   </select>
   
   <select id="selectTeamByQueryCriteria" parameterType="com.klwork.business.domain.model.TeamQuery" resultMap="TeamMap">

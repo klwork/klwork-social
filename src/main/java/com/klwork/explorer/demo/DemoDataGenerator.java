@@ -174,7 +174,6 @@ public class DemoDataGenerator implements ModelDataJsonConstants {
     
     String deploymentName = "Demo processes";
     List<Deployment> deploymentList = repositoryService.createDeploymentQuery().deploymentName(deploymentName).list();
-    
     if (deploymentList == null || deploymentList.size() == 0) {
     	DeploymentBuilder s = repositoryService.createDeployment()
         .name(deploymentName)
@@ -200,6 +199,24 @@ public class DemoDataGenerator implements ModelDataJsonConstants {
         .addClasspathResource("org/activiti/explorer/demo/process/reports/helpdeskFirstLineVsEscalated.bpmn20.xml")
         .addClasspathResource("org/activiti/explorer/demo/process/reports/employeeProductivity.bpmn20.xml")
         .deploy();
+    }
+    
+    String crowdsourcingName = "外包流程";
+    deploymentList = repositoryService.createDeploymentQuery().deploymentName(crowdsourcingName).list();
+    //WW_TODO 数据库启动时加载流程文件
+    if (deploymentList == null || deploymentList.size() == 0) {
+    	DeploymentBuilder s = repositoryService.createDeployment()
+        .name(crowdsourcingName)
+        .addClasspathResource("com/klwork/flow/act/act-crowdsourcing.bpmn20.xml");
+        s.deploy();
+        
+    }else {
+    	/*Deployment t = deploymentList.get(0);
+    	repositoryService.deleteDeployment(t.getId(), true);
+    	DeploymentBuilder s = repositoryService.createDeployment()
+    	        .name(crowdsourcingName)
+    	        .addClasspathResource("com/klwork/flow/act/act-crowdsourcing.bpmn20.xml");
+    	        s.deploy();*/
     }
     
     // Generate some data for the 'employee productivity' report

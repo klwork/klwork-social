@@ -7,9 +7,9 @@
 		</encoder>
 	</appender>
 
-    <logger name="com.klwork" level="DEBUG"/>
+    <logger name="com.klwork" level="INFO"/>
 
-    <root level="INFO">
+    <root level="ERROR">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>

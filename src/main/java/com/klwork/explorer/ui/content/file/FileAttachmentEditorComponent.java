@@ -69,6 +69,7 @@ public class FileAttachmentEditorComponent extends VerticalLayout implements Att
   }
   
   public FileAttachmentEditorComponent(Attachment attachment, String taskId, String processInstanceId) {
+	//WW_TODO 附件上传
     this.attachment = attachment;
     this.taskId = taskId;
     this.processInstanceId = processInstanceId;

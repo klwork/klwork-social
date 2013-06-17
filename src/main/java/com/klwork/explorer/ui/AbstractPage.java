@@ -49,7 +49,8 @@ public abstract class AbstractPage extends CustomComponent {
    */
   protected void initUi() {
 	//WW_TODO x initUI,生成/代办任务/搜索行/任务相关事件
-    showEvents = getEventComponent() != null;
+    //showEvents = getEventComponent() != null;
+    showEvents = false;
     //如果有事件为GridLayout 3,3
     initMainLayout();
     setSizeFull();
@@ -92,14 +93,14 @@ public abstract class AbstractPage extends CustomComponent {
   protected void initMainLayout() {
     if(showEvents) {
       grid = new GridLayout(3, 3);
-      grid.setColumnExpandRatio(0, .25f);
-      grid.setColumnExpandRatio(1, .52f);
+      grid.setColumnExpandRatio(0, .20f);
+      grid.setColumnExpandRatio(1, .57f);
       grid.setColumnExpandRatio(2, .23f);
     } else {
       grid = new GridLayout(2, 3);
 
-      grid.setColumnExpandRatio(0, .25f);
-      grid.setColumnExpandRatio(1, .75f);
+      grid.setColumnExpandRatio(0, .20f);
+      grid.setColumnExpandRatio(1, .80f);
     }
     
     grid.addStyleName(Reindeer.SPLITPANEL_SMALL);

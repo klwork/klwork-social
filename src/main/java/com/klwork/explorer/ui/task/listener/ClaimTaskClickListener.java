@@ -39,7 +39,6 @@ public class ClaimTaskClickListener implements ClickListener {
 
   protected transient TaskService taskService;
   protected I18nManager i18nManager;
-  protected ViewManager viewManager;
   protected NotificationManager notificationManager;
   
   public ClaimTaskClickListener(String taskId, TaskService taskService) {
@@ -51,9 +50,10 @@ public class ClaimTaskClickListener implements ClickListener {
 
   public void buttonClick(ClickEvent event) {
     try {
+      //WW_TODO 任务的签收和认领
       taskService.claim(taskId, LoginHandler.getLoggedInUser().getId());
       notificationManager.showInformationNotification(Messages.TASK_CLAIM_SUCCESS);
-      viewManager.showInboxPage(taskId);
+      ViewToolManager.getMainView().showInboxPage(taskId);
     } catch(ActivitiException ae) {
       notificationManager.showErrorNotification(Messages.TASK_CLAIM_FAILED, ae.getMessage());
     }
