@@ -19,9 +19,9 @@ import org.activiti.engine.identity.User;
 import org.activiti.engine.task.Event;
 
 import com.klwork.explorer.I18nManager;
-import com.klwork.explorer.Messages;
+import com.klwork.explorer.ViewToolManager;
 import com.klwork.explorer.ui.mainlayout.ExplorerLayout;
-import com.klwork.ui.security.LoginHandler;
+import com.klwork.explorer.ui.user.UserCache;
 import com.vaadin.ui.Label;
 
 
@@ -42,10 +42,10 @@ public class TaskEventTextResolver implements Serializable {
   }
   
   public Label resolveText(Event event) {
-    //UserCache userCache = ExplorerApp.get().getUserCache();
-    //User user = userCache.findUser(event.getUserId());
+    UserCache userCache = ViewToolManager.getUserCache();
+    User user = userCache.findUser(event.getUserId());
     
-    User user = LoginHandler.findUser(event.getUserId());
+   // User user = LoginHandler.findUser(event.getUserId());
     String eventAuthor = "<span class='" + ExplorerLayout.STYLE_TASK_EVENT_AUTHOR + "'>" 
           + user.getFirstName() + " " + user.getLastName() + "</span> ";
     

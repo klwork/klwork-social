@@ -85,6 +85,7 @@ public class MyJdbcShiroRealm extends AuthorizingRealm {
 		}
 
 		if (loggedInUser != null) {
+			//WW_TODO 登录成功设置用户信息
 			LoginHandler.setUser(loggedInUser);
 			Subject subject = SecurityUtils.getSubject();
 	        Session session = subject.getSession();

@@ -117,7 +117,7 @@ public class ActTest extends AbstractKlworkTestCase {
 		taskService.complete(task.getId() );
 		
 		//identityService.setAuthenticatedUserId("ww_user2");
-		taskService.currentNewInstanceByKey(processInstance.getProcessInstanceId(),"uploadWork","ww_user2");
+		taskService.currentNewInstanceByKey(processInstance.getProcessInstanceId(),"uploadWork",null);
 		//默认的会生成几个管理任务，如果 3 个+手动触发的一个
 		List<Task> tasks = listTaskByProcessInsId(processInstance);
 		assertEquals(2, tasks.size());

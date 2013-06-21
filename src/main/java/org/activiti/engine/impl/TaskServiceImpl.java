@@ -317,8 +317,8 @@ public class TaskServiceImpl extends ServiceImpl implements TaskService {
   }
 
   public void currentNewInstanceByKey(String processInstanceId, String activitId,
-			String userId) {
-		commandExecutor.execute(new CurrentNewInstanceCmd(processInstanceId,activitId,userId));
+			Map<String, String> formProperties) {
+		commandExecutor.execute(new CurrentNewInstanceCmd(processInstanceId,activitId,formProperties));
   }
 
    public TaskDefinition queryTaskDefinition(Task task) {

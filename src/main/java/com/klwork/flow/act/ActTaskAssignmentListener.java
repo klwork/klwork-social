@@ -14,38 +14,54 @@ package com.klwork.flow.act;
 
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
-import org.activiti.engine.impl.identity.Authentication;
+
+import com.klwork.business.domain.model.EntityDictionary;
+import com.klwork.business.domain.model.OutsourcingProject;
+import com.klwork.business.domain.service.OutsourcingProjectService;
+import com.klwork.business.domain.service.ProjectManagerService;
+import com.klwork.explorer.ViewToolManager;
+import com.klwork.flow.task.ExecutionHandler;
 
 /**
  * @author Frederik Heremans
  */
 public class ActTaskAssignmentListener implements TaskListener {
 
-	private static final String CLAIM_USER_ID = "claimUserId";
 	private static final long serialVersionUID = 1L;
-
+	private static OutsourcingProjectService outsourcingProjectService = ViewToolManager
+			.getBean("outsourcingProjectService");
+	private static ProjectManagerService projectManagerService = ViewToolManager
+			.getBean("projectManagerService");
+	
 	public void notify(DelegateTask delegateTask) {
 		delegateTask.setDescription("TaskAssignmentListener is listening: "
 				+ delegateTask.getAssignee());
-		//从外部取
-		Object userId = delegateTask.getVariable(CLAIM_USER_ID);
+		String userId = ExecutionHandler.getVar(delegateTask,EntityDictionary.CLAIM_USER_ID);
+		String outsourcingProjectId = ExecutionHandler.getVar(delegateTask,EntityDictionary.OUTSOURCING_PROJECT_ID);
+		
 		if (userId != null) {
 			System.out.println("外部claimUserId:" + userId);
 			delegateTask.setAssignee((String) userId);
 		} else {
-			String authenticatedUserId = Authentication
-					.getAuthenticatedUserId();
-			delegateTask.setAssignee(authenticatedUserId);
-			userId = authenticatedUserId;
+			OutsourcingProject p = outsourcingProjectService.findOutsourcingProjectById(outsourcingProjectId);
+			if(p != null){
+				System.out.println("项目参与人:" + p.getOwnUser());
+				delegateTask.setAssignee(p.getOwnUser());
+				userId = p.getOwnUser();
+			}
 		}
+		projectManagerService.addNewParticipate(outsourcingProjectId, userId);
 		saveAuthToVariable(delegateTask, userId.toString());
 	}
 
+
 	private void saveAuthToVariable(DelegateTask delegateTask,
 			String authenticatedUserId) {
-		delegateTask.setVariableLocal(CLAIM_USER_ID,
+		delegateTask.setVariableLocal(EntityDictionary.CLAIM_USER_ID,
 				authenticatedUserId);
-		delegateTask.getExecution().setVariableLocal(CLAIM_USER_ID,
+		delegateTask.getExecution().setVariableLocal(EntityDictionary.CLAIM_USER_ID,
 				authenticatedUserId);
 	}
+	
+	
 }

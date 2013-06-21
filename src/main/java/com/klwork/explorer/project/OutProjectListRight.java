@@ -1,6 +1,19 @@
 package com.klwork.explorer.project;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.activiti.engine.ProcessEngines;
+import org.activiti.engine.TaskService;
+import org.activiti.engine.task.Task;
+
+import com.klwork.business.domain.model.EntityDictionary;
 import com.klwork.business.domain.model.OutsourcingProject;
+import com.klwork.business.domain.model.ProjectParticipant;
+import com.klwork.business.domain.service.ProjectManagerService;
+import com.klwork.business.domain.service.ProjectParticipantService;
+import com.klwork.explorer.ViewToolManager;
 import com.klwork.explorer.data.LazyLoadingContainer;
 import com.klwork.explorer.data.LazyLoadingQuery;
 import com.klwork.explorer.ui.Images;
@@ -12,24 +25,36 @@ import com.klwork.explorer.ui.handler.CommonFieldHandler;
 import com.klwork.explorer.ui.handler.TableHandler;
 import com.klwork.explorer.ui.mainlayout.ExplorerLayout;
 import com.klwork.explorer.ui.util.ThemeImageColumnGenerator;
+import com.klwork.ui.security.LoginHandler;
 import com.vaadin.data.Item;
-import com.vaadin.shared.ui.MarginInfo;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.Table;
 import com.vaadin.ui.Table.ColumnGenerator;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.Reindeer;
 
 public class OutProjectListRight extends DetailPanel {
+
+	// Services
+	protected transient TaskService taskService;
+	protected transient ProjectParticipantService projectParticipantService;
+	protected transient ProjectManagerService projectManagerService;
 	protected VerticalLayout centralLayout;
 
 	public OutProjectListRight() {
 		super();
+		this.taskService = ProcessEngines.getDefaultProcessEngine()
+				.getTaskService();
+		this.projectParticipantService = ViewToolManager
+				.getBean("projectParticipantService");
+		projectManagerService = ViewToolManager
+				.getBean("projectManagerService");
 	}
 
 	@Override
@@ -86,10 +111,24 @@ public class OutProjectListRight extends DetailPanel {
 		listTable.setColumnWidth("icon", 22);
 
 		listTable.addContainerProperty("name", String.class, "");
+		listTable.setColumnExpandRatio("name", 0.5f);
 		listTable.addGeneratedColumn("edit", new ProjectEditColumnGenerator());
+		listTable.setColumnExpandRatio("edit", 0.2f);
 
 		TableHandler.setTableNoHead(listTable);
 		listTable.setImmediate(false);
+	}
+
+	public void noticeNewTask(String processInstanceId) {
+		List<Task> loggedInUsersTasks = taskService.createTaskQuery()
+				.taskAssignee(LoginHandler.getLoggedInUser().getId())
+				.processInstanceId(processInstanceId).list();
+		if (loggedInUsersTasks.size() > 0) {
+			String message = "一个新任务" + loggedInUsersTasks.get(0).getName()
+					+ "在您的收件箱，请注意查收";
+			Notification.show(message, Notification.Type.HUMANIZED_MESSAGE);
+
+		}
 	}
 
 	public class ProjectEditColumnGenerator implements ColumnGenerator {
@@ -101,12 +140,13 @@ public class OutProjectListRight extends DetailPanel {
 		@Override
 		public Object generateCell(final Table source, final Object itemId,
 				Object columnId) {
-			OutsourcingProject project = BinderHandler.getTableBean(source, itemId);
+			final OutsourcingProject project = BinderHandler.getTableBean(
+					source, itemId);
 			GridLayout grid = new GridLayout(2, 3);
 			grid.addStyleName(Reindeer.SPLITPANEL_SMALL);
-			//grid.setMargin(true);
-			grid.setMargin(new MarginInfo(true, false, true, false));
-			//加点空
+			grid.setMargin(true);
+			// grid.setMargin(new MarginInfo(true, false, true, false));
+			// 加点空
 			grid.setSpacing(true);
 			grid.setSizeFull();
 
@@ -114,19 +154,27 @@ public class OutProjectListRight extends DetailPanel {
 			title.addStyleName(ExplorerLayout.STYLE_H3);
 			title.setWidth(100, Unit.PERCENTAGE);
 			grid.addComponent(title, 0, 0, 1, 0);
+			grid.setColumnExpandRatio(0, 0.7f);
+			grid.setColumnExpandRatio(1, 0.3f);
 
 			String amontTitle = "金额:" + project.getBounty();
 			Label title2 = new Label(amontTitle);
 			title2.addStyleName(ExplorerLayout.STYLE_H4);
 			grid.addComponent(title2, 0, 1);
-			
-			
 
 			Button addButton = new Button("加入");
 			addButton.addStyleName(Reindeer.BUTTON_SMALL);
 			grid.addComponent(addButton, 0, 2);
 			addButton.setDisableOnClick(true);
-			
+
+			addButton.addClickListener(new ClickListener() {
+				public void buttonClick(ClickEvent event) {
+					projectManagerService.participateProject(project);
+					noticeNewTask(project.getProcInstId());
+				}
+
+			});
+
 			Button editButton = new Button("提交作品");
 			grid.addComponent(editButton, 1, 2);
 			editButton.addStyleName(Reindeer.BUTTON_SMALL);

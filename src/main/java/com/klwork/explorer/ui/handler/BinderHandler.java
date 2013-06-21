@@ -2,6 +2,7 @@ package com.klwork.explorer.ui.handler;
 
 import com.vaadin.data.Item;
 import com.vaadin.data.fieldgroup.FieldGroup;
+import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.ui.Table;
 
@@ -14,6 +15,13 @@ public class BinderHandler {
 		return event;
 	}
 	
+	public static void commit(FieldGroup fg) {
+		try {
+			fg.commit();
+		} catch (CommitException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	@SuppressWarnings("unchecked")
 	public static <T> T getTableBean(Table source, Object itemId) {

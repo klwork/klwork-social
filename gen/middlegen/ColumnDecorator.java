@@ -125,6 +125,8 @@ public class ColumnDecorator extends PreferenceAware implements Column {
 			return "NUMERIC";
 		}else if (typename.indexOf("BOOL") != -1) {
 			return "BOOLEAN";
+		}else if (typename.indexOf("CHAR") != -1) {
+			return "CHAR";
 		}else {
 			return typename;
 		}

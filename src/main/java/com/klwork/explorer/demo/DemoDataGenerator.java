@@ -170,7 +170,8 @@ public class DemoDataGenerator implements ModelDataJsonConstants {
     
   }
   
-  protected void initProcessDefinitions() {
+  @SuppressWarnings("unused")
+protected void initProcessDefinitions() {
     
     String deploymentName = "Demo processes";
     List<Deployment> deploymentList = repositoryService.createDeploymentQuery().deploymentName(deploymentName).list();
@@ -211,12 +212,15 @@ public class DemoDataGenerator implements ModelDataJsonConstants {
         s.deploy();
         
     }else {
-    	/*Deployment t = deploymentList.get(0);
-    	repositoryService.deleteDeployment(t.getId(), true);
-    	DeploymentBuilder s = repositoryService.createDeployment()
-    	        .name(crowdsourcingName)
-    	        .addClasspathResource("com/klwork/flow/act/act-crowdsourcing.bpmn20.xml");
-    	        s.deploy();*/
+    	if(true){
+	    	Deployment t = deploymentList.get(0);
+	    	repositoryService.deleteDeployment(t.getId(), true);
+	    	DeploymentBuilder s = repositoryService.createDeployment()
+	    	        .name(crowdsourcingName)
+	    	        .addClasspathResource("com/klwork/flow/act/act-crowdsourcing.bpmn20.xml");
+	    	Deployment dt = s.deploy();
+	    	System.out.println("部署id" + dt.getId() + "-------------" +  "  部署name" + dt.getName());
+    	}
     }
     
     // Generate some data for the 'employee productivity' report

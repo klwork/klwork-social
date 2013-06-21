@@ -82,6 +82,9 @@ public class JavaColumn extends ColumnDecorator {
 		if (javaType == null) {
 			throw new IllegalStateException("BUG: javaType can't be null. " + middlegen.Middlegen.BUGREPORT);
 		}
+		if("java.math.BigDecimal".equals(javaType)){
+			javaType = "Double";
+		}
 		setPrefsValue("java-type", javaType);
 		_javaType = javaType;
 	}

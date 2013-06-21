@@ -60,17 +60,24 @@ public class CommonFieldHandler {
 	public static ComboBox createComBox(String caption,
 			Map<String, String> data, Object defaultValue) {
 		ComboBox s = new ComboBox();
-		String sign = "sign";
+		s.setNullSelectionAllowed(false);
+		Object firstItemId = null;
 		if (StringTool.judgeBlank(caption)) {
 			s.setCaption(caption);
 		}
-		s.addContainerProperty(sign, defaultValue.getClass(), defaultValue);
-		s.setItemCaptionPropertyId(sign);
 		for (String p : data.keySet()) {
 			String title = data.get(p);
 			Item i = s.addItem(p);
-			i.getItemProperty(sign).setValue(title);
+			s.setItemCaption(p, title);
+			if(p.equals(defaultValue)){
+				firstItemId = p;
+			}
 		}
+		
+		// Select first element
+	    if (firstItemId != null) {
+	      s.select(firstItemId);
+	    }
 		return s;
 	}
 	

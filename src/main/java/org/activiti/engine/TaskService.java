@@ -393,10 +393,10 @@ public interface TaskService {
    * 产生一个新的任务实体
    * @param processInstanceId
    * @param activitId
-   * @param userId
+   * @param formProperties 
    */
   void currentNewInstanceByKey(String processInstanceId, String activitId,
-			String userId);	
+			Map<String, String> formProperties);	
   
   TaskDefinition queryTaskDefinition(Task task);
 }

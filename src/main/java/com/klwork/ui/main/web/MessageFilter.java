@@ -22,7 +22,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.shiro.SecurityUtils;
+
 import com.klwork.explorer.ViewToolManager;
+import com.klwork.ui.security.LoggedInUser;
+import com.klwork.ui.security.LoginHandler;
 
 /**
  * The Class MessageFilter.
@@ -35,8 +39,10 @@ public class MessageFilter implements Filter {
 
 		StringBuffer requestURL = request.getRequestURL();
 		ViewToolManager.setWebContextPath(request.getContextPath());
-		System.out.println("当前url:" + requestURL);
-		request.setAttribute("requestURL", requestURL);
+		/*System.out.println("当前url:" + requestURL);
+		request.setAttribute("requestURL", requestURL);*/
+		
+		LoginHandler.resetUser();
 		chain.doFilter(req, res);
 	}
 

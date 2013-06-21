@@ -15,14 +15,14 @@ import org.activiti.engine.ProcessEngines;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import com.klwork.business.domain.model.OutsourcingProject;
 import com.klwork.business.domain.service.OutsourcingProjectService;
+import com.klwork.business.domain.service.ProjectManagerService;
 import com.klwork.explorer.I18nManager;
 import com.klwork.explorer.Messages;
 import com.klwork.explorer.ViewToolManager;
@@ -53,18 +53,19 @@ public class ActivityStartPopupWindow extends PopupWindow {
 	// LoggerFactory.getLogger(ActivityStartPopupWindow.class);
 
 	// Services
-	protected transient RepositoryService repositoryService;
+	public transient RepositoryService repositoryService;
 	protected transient ManagementService managementService;
-	protected transient RuntimeService runtimeService;
-	protected transient OutsourcingProjectService outsourcingProjectService;
+	public transient RuntimeService runtimeService;
+	public transient OutsourcingProjectService outsourcingProjectService;
 	protected transient TaskService taskService;
+	protected transient ProjectManagerService projectManagerService;
 	protected I18nManager i18nManager;
 
 	// Members
-	protected ProcessDefinition processDefinition;
+	public ProcessDefinition processDefinition;
 	protected Deployment deployment;
 	protected VerticalLayout mainLayout;
-	protected String todoId;
+	public String todoId;
 	public ActivityStartPopupWindow(String todoId) {
 		this.runtimeService = ProcessEngines.getDefaultProcessEngine()
 				.getRuntimeService();
@@ -76,6 +77,9 @@ public class ActivityStartPopupWindow extends PopupWindow {
 				.getManagementService();
 		
 		this.outsourcingProjectService = ViewToolManager.getBean("outsourcingProjectService");
+		projectManagerService = ViewToolManager
+				.getBean("projectManagerService");
+		
 		this.todoId = todoId;
 		this.i18nManager = ViewToolManager.getI18nManager();
 		String processDefinitionId = "fixSystemFailure:1:516";
@@ -243,22 +247,12 @@ public class ActivityStartPopupWindow extends PopupWindow {
 	}
 
 	private void doStartProcessInstance() {
-		processDefinition = repositoryService
-		.getProcessDefinition("klwork-crowdsourcing-act:1:62206");
-		Authentication.setAuthenticatedUserId(LoginHandler.getLoggedInUser().getId());
-		ProcessInstance processInstance = runtimeService
-				.startProcessInstanceById(processDefinition.getId());
+		//WW_TODO 开始启动关联的一个流程
+		ProcessInstance processInstance = projectManagerService.startProcessInstanceRelateTodo(todoId, "klwork-crowdsourcing-act");
+		
 		List<Task> loggedInUsersTasks = taskService.createTaskQuery()
 				.taskAssignee(LoginHandler.getLoggedInUser().getId())
 				.processInstanceId(processInstance.getId()).list();
-		//新建一个业务对象
-		OutsourcingProject outsourcingProject = new OutsourcingProject();
-		outsourcingProject.setProcInstId(processInstance.getId());
-		outsourcingProject.setOwnUser(LoginHandler.getLoggedInUser().getId());
-		//关联的todo对象
-		outsourcingProject.setRelatedTodo(todoId);
-		outsourcingProjectService.createOutsourcingProject(outsourcingProject);
-		
 		if (loggedInUsersTasks.size() > 0) {
 			String message = "一个新任务" + loggedInUsersTasks.get(0).getName()
 					+ "在您的收件箱，请注意查收";

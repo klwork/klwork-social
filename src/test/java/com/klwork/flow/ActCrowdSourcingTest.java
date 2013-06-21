@@ -25,14 +25,19 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.test.Deployment;
 
+import com.klwork.business.domain.service.ProjectManagerService;
+import com.klwork.explorer.ViewToolManager;
+import com.klwork.ui.security.LoginHandler;
+
 /**
  * @author ww
  */
 public class ActCrowdSourcingTest extends AbstractKlworkTestCase {
-
 	// 测试主要流程
-	@Deployment(resources = { "act-crowdsourcing.bpmn20.xml" })
+	@Deployment(resources = { "act-crowdsourcing-test.bpmn20.xml" })
 	public void testMaiFlow() {
+		ProjectManagerService  projectManagerService = ViewToolManager
+				.getBean("projectManagerService");
 		// 测试部署的文件
 		String deploymentId = repositoryService.createDeploymentQuery()
 				.singleResult().getId();
@@ -85,59 +90,56 @@ public class ActCrowdSourcingTest extends AbstractKlworkTestCase {
 		
 		//完成填写需求的任务
 		Map<String, Object> variables = new HashMap<String, Object>();
-		variables.put("outsourcingProjectId", "klwork.com");
+		String projectId = "klwork.com";
+		variables.put("outsourcingProjectId", projectId);
+		//流程变量
 		variables.put("checker", "ww_user2");
 		taskService.complete(task.getId(), variables );
 		
+		
+		//以ww_user2登录
+		identityService.setAuthenticatedUserId("ww_user2");
 		//管理员进行任务的审核，进行通过操作
 		task = taskService.createTaskQuery().taskAssignee("ww_user2").singleResult();
 		
 		assertNotNull(task);
 		taskService.claim(task.getId(), "ww_user2");
-		
-		
-		/*Map<String, String> formProperties = new HashMap<String, String>();
-		
-		//上面的属性不能进行提交，只读，下面的是必须的。
+		Map<String, String> formProperties = new HashMap<String, String>();
+		//初审通过
 		formProperties.put("needPreChecked", "true");
-		//审核意见
-		
 		//完成一个任务
 		formService.submitTaskFormData(task.getId(), formProperties);
 		
-		//管理员公布需求
-		task = taskService.createTaskQuery().taskCandidateGroup("management").singleResult();
-		assertNotNull(task);
-		taskService.claim(task.getId(), "ww_management");
-		//一群人进行任务的提交,时间过期则进行销毁操作,只要是用户组的都可以进行领取
-		taskService.complete(task.getId() );
 		
-		taskService.currentNewInstanceByKey(processInstance.getProcessInstanceId(),"uploadWork","ww_user2");
-		//默认的会生成几个管理任务，如果 3 个+手动触发的一个
+		identityService.setAuthenticatedUserId("ww");
+		formProperties = new HashMap<String, String>();
+		formProperties.put("outsourcingProjectId",
+				projectId);
+		formProperties.put("claimUserId",
+				 "ww");
+		taskService.currentNewInstanceByKey(processInstance.getProcessInstanceId(),"uploadWork",formProperties);
+		//默认的会生成几个管理任务，如果 1个+手动触发的一个
 		List<Task> tasks = listTaskByProcessInsId(processInstance);
 		assertEquals(2, tasks.size());
 		
 		
-		//ww进行提交,下载资料任务完成
+		
+		//ww进行提交,上传资料
 		Task wwtask = taskService.createTaskQuery().taskAssignee("ww").singleResult();
 		taskService.complete(wwtask.getId() );
 		
 		Task wwtask2 = taskService.createTaskQuery().taskAssignee("ww_user2").singleResult();
 		taskService.complete(wwtask2.getId() );
 		
-		//上传资料
-		wwtask = taskService.createTaskQuery().taskAssignee("ww").singleResult();
-		formProperties = new HashMap<String, String>();
-		formProperties.put("workAttachment", "黑客与画家.rar");
-		formService.submitTaskFormData(wwtask.getId(), formProperties);
 		
 		
-		tasks = listTaskByProcessInsId(processInstance);
-		assertEquals(1,tasks.size());
+		/*//管理员公布需求
+		task = taskService.createTaskQuery().taskCandidateGroup("management").singleResult();
+		assertNotNull(task);
+		taskService.claim(task.getId(), "ww_management");
+		//一群人进行任务的提交,时间过期则进行销毁操作,只要是用户组的都可以进行领取
+		taskService.complete(task.getId() );
 		
-		formProperties = new HashMap<String, String>();
-		formProperties.put("workAttachment", "黑客与画家2.rar");
-		formService.submitTaskFormData(tasks.get(0).getId(), formProperties);
 		
 		//两个评审任务
 		tasks = listTaskByProcessInsId(processInstance);

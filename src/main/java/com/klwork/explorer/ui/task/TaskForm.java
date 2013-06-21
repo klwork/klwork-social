@@ -17,4 +17,12 @@ public abstract class TaskForm extends VerticalLayout {
 
 	public abstract void notifyRelatedContentChanged();
 
+	@Override
+	public void attach() {
+		initUi();
+	}
+
+	protected void initUi() {
+
+	}
 }

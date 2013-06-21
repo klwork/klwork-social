@@ -5,14 +5,16 @@ import java.util.Date;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 
+import com.klwork.business.domain.service.OutsourcingProjectService;
+
 public class WorkCheckService implements JavaDelegate {
+	protected transient OutsourcingProjectService outsourcingProjectService;
 	
 	@Override
 	public void execute(DelegateExecution execution) {
-		/*System.out.println("execution id " + execution.getId());
-		Long isbn = (Long) execution.getVariable("isbn");
-		System.out.println("xx received isbn " + isbn);
-		execution.setVariable("validatetime", new Date());*/
+		String taskId = (String) execution.getVariable("taskId");
+		String outsourcingProjectId = (String) execution.getVariable("outsourcingProjectId");
+		//outsourcingProjectService.findOutsourcingProjectById(outsourcingProjectId);
 		//检查通过
 		execution.setVariable("workChecked",true);
 		System.out.println("检查通过");

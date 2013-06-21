@@ -71,11 +71,11 @@ public class MyTaskRelatedContentComponent extends VerticalLayout implements
 	protected Table table;
 	protected TaskForm taskForm;
 	protected Label noContentLabel;
-
+	protected boolean readOnly = false;
 	private String relatedContentTitle = "需求相关的附件";
 
 	public MyTaskRelatedContentComponent(Task task,
-			TaskForm taskDetailPanel) {
+			TaskForm taskDetailPanel, boolean readOnly) {
 		this.taskService = ProcessEngines.getDefaultProcessEngine()
 				.getTaskService();
 		this.i18nManager = ViewToolManager.getI18nManager();
@@ -84,6 +84,7 @@ public class MyTaskRelatedContentComponent extends VerticalLayout implements
 
 		this.task = task;
 		this.taskForm = taskDetailPanel;
+		this.readOnly = readOnly;
 
 		addStyleName(ExplorerLayout.STYLE_DETAIL_BLOCK);
 
@@ -102,7 +103,6 @@ public class MyTaskRelatedContentComponent extends VerticalLayout implements
 		// WW_TODO 关联的内容
 		HorizontalLayout actionsContainer = new HorizontalLayout();
 		actionsContainer.setSizeFull();
-
 		
 		Label processTitle = new Label(relatedContentTitle);
 		processTitle.addStyleName(ExplorerLayout.STYLE_H3);
@@ -111,7 +111,18 @@ public class MyTaskRelatedContentComponent extends VerticalLayout implements
 		actionsContainer.setComponentAlignment(processTitle,
 				Alignment.MIDDLE_LEFT);
 		actionsContainer.setExpandRatio(processTitle, 1.0f);
+		actionsContainer.setComponentAlignment(processTitle,
+				Alignment.MIDDLE_RIGHT);
+		//只能查看
+		if(!readOnly){
+			Button addRelatedContentButton = getAddButton();
+			actionsContainer.addComponent(addRelatedContentButton);
+		}
+		
+		addComponent(actionsContainer);
+	}
 
+	protected Button getAddButton() {
 		// Add content button
 		Button addRelatedContentButton = new Button();
 		//新增附件
@@ -149,12 +160,7 @@ public class MyTaskRelatedContentComponent extends VerticalLayout implements
 						ViewToolManager.showPopupWindow(popup);
 					}
 				});
-
-		actionsContainer.addComponent(addRelatedContentButton);
-		actionsContainer.setComponentAlignment(processTitle,
-				Alignment.MIDDLE_RIGHT);
-
-		addComponent(actionsContainer);
+		return addRelatedContentButton;
 	}
 
 	protected void initAttachmentTable() {
@@ -219,14 +225,16 @@ public class MyTaskRelatedContentComponent extends VerticalLayout implements
 					renderer.getOverviewComponent(attachment, this));
 			attachmentItem.getItemProperty("type").setValue(
 					new Embedded(null, renderer.getImage(attachment)));
-
-			Embedded deleteButton = new Embedded(null, Images.DELETE);
-			deleteButton.addStyleName(ExplorerLayout.STYLE_CLICKABLE);
-			//附件的删除功能
-			deleteButton.addClickListener((ClickListener) new DeleteClickedListener(
-					attachment));
-			//delete属性附加
-			attachmentItem.getItemProperty("delete").setValue(deleteButton);
+			//只能查看
+			if(!readOnly){
+				Embedded deleteButton = new Embedded(null, Images.DELETE);
+				deleteButton.addStyleName(ExplorerLayout.STYLE_CLICKABLE);
+				//附件的删除功能
+				deleteButton.addClickListener((ClickListener) new DeleteClickedListener(
+						attachment));
+				//delete属性附加
+				attachmentItem.getItemProperty("delete").setValue(deleteButton);
+			}
 		}
 
 		if (table.getItemIds().size() > 0) {

@@ -13,6 +13,8 @@
 
 package com.klwork.explorer.ui.content;
 
+import java.util.List;
+
 import org.activiti.engine.ProcessEngines;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.task.Attachment;
@@ -59,8 +61,12 @@ public class CreateAttachmentPopupWindow extends PopupWindow {
 	protected AttachmentEditorComponent currentEditor;
 	protected Table attachmentTypes;
 	protected Button okButton;
+	
+	//如果指定了包含，则只显示此类文件
+	protected List includeTypes = null;
 
-	public CreateAttachmentPopupWindow() {
+	public CreateAttachmentPopupWindow(List types) {
+		this.includeTypes = types;
 		this.i18nManager = ViewToolManager.getI18nManager();
 		this.attachmentRendererManager = ViewToolManager
 				.getAttachmentRendererManager();
@@ -96,6 +102,10 @@ public class CreateAttachmentPopupWindow extends PopupWindow {
 		detailLayout.setColumnExpandRatio(0, 1.0f);
 		// 创建按钮
 		initActions();
+	}
+	
+	public CreateAttachmentPopupWindow() {
+		this(null);
 	}
 
 	@Override
@@ -156,16 +166,21 @@ public class CreateAttachmentPopupWindow extends PopupWindow {
 		// Add all possible attachment types
 		for (AttachmentEditor editor : attachmentRendererManager
 				.getAttachmentEditors()) {// 支持的类型，文件盒url
-			String name = editor.getTitle(i18nManager);
-			Embedded image = null;
-
-			Resource resource = editor.getImage();
-			if (resource != null) {
-				image = new Embedded(null, resource);
+			
+			if(includeTypes != null && !includeTypes.contains(editor.getName())){
+				continue;
 			}
-			Item item = attachmentTypes.addItem(editor.getName());
-			item.getItemProperty("type").setValue(image);
-			item.getItemProperty("name").setValue(name);
+				String name = editor.getTitle(i18nManager);
+				Embedded image = null;
+	
+				Resource resource = editor.getImage();
+				if (resource != null) {
+					image = new Embedded(null, resource);
+				}
+				Item item = attachmentTypes.addItem(editor.getName());
+				item.getItemProperty("type").setValue(image);
+				item.getItemProperty("name").setValue(name);
+			
 		}
 
 		// Add listener to show editor component

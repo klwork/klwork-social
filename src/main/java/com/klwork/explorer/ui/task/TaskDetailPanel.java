@@ -32,6 +32,8 @@ import com.klwork.explorer.ViewToolManager;
 import com.klwork.explorer.ui.Images;
 import com.klwork.explorer.ui.custom.DetailPanel;
 import com.klwork.explorer.ui.custom.PrettyTimeLabel;
+import com.klwork.explorer.ui.event.SubmitEvent;
+import com.klwork.explorer.ui.event.SubmitEventListener;
 import com.klwork.explorer.ui.form.FormPropertiesEvent;
 import com.klwork.explorer.ui.form.FormPropertiesEventListener;
 import com.klwork.explorer.ui.form.FormPropertiesForm;
@@ -333,24 +335,24 @@ public boolean judgeInnerTask() {
     if(formData != null && StringTool.judgeBlank(formData.getFormKey())){
     	TaskForm c = TaskFormFactory.create(formData.getFormKey(),task);
     	centralLayout.addComponent(c);
-    	c.addListener(new FormPropertiesEventListener() {
+    	c.addListener(new SubmitEventListener() {
             private static final long serialVersionUID = -3893467157397686736L;
             
             @Override
-            protected void handleFormSubmit(FormPropertiesEvent event) {
+			protected void submitted(SubmitEvent event) {
               //流程变量，也提交来了
-              Map<String, String> properties = event.getFormProperties();
+              Map<String, Object> properties = (Map<String, Object>)event.getData();
               System.out.println(properties);
-              /*formService.submitTaskFormData(task.getId(), properties);
+              taskService.complete(task.getId(), properties);
               notificationManager.showInformationNotification(Messages.TASK_COMPLETED, task.getName());
-              taskPage.refreshSelectNext();*/
+              taskPage.refreshSelectNext();
             }
-            
-            @Override
-            protected void handleFormCancel(FormPropertiesEvent event) {
-              // Clear the form values 
-              taskForm.clear();
-            }
+          
+
+			@Override
+			protected void cancelled(SubmitEvent event) {
+				 taskForm.clear();
+			}
           });
     	
     	return;

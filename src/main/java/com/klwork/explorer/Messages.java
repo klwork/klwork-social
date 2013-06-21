@@ -163,6 +163,9 @@ public interface Messages {
   String TASK_NO_RELATED_CONTENT = "task.no.related.content";
   String TASK_PEOPLE = "task.people";
   String TASK_FORM_HELP = "task.form.help";
+  String TASK_FORM_UPLOAD_HELP = "task.form.upload.help";
+  String TASK_FORM_GRADE_HELP = "task.form.grade.help";
+  
   String TASK_SUBTASKS = "task.subtasks";
   String TASK_NO_SUBTASKS = "task.no.subtasks";
   String TASK_CONFIRM_DELETE_SUBTASK = "task.confirm.delete.subtask";

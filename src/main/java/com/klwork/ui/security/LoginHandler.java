@@ -1,10 +1,9 @@
 package com.klwork.ui.security;
 
-import org.activiti.engine.identity.User;
+import org.activiti.engine.impl.identity.Authentication;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 
-import com.klwork.explorer.ui.user.UserCache;
 
 public class LoginHandler {
 	
@@ -31,16 +30,23 @@ public class LoginHandler {
 		}
 		return u;
 	}
-
-	public static void setUser(LoggedInUser user) {
-		loginHandler_currentUser.set(user);
-	}
-
-	public static User findUser(String userId) {
-		//
-		return null;
+	
+	public static void resetUser() {
+		Object ou = SecurityUtils.getSubject().getSession().getAttribute(LOGIN_USER_KEY);
+        if(ou != null){
+        	setUser((LoggedInUser)ou);
+        }
 	}
 	
+	public static void setUser(LoggedInUser user) {
+		loginHandler_currentUser.set(user);
+		if(user != null){
+			Authentication.setAuthenticatedUserId(user.getId());
+		}else {
+			Authentication.setAuthenticatedUserId(null);
+		}
+	}
+
 	/**
 	 * 用户认证
 	 * @param id

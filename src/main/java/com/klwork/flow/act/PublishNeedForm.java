@@ -1,6 +1,5 @@
 package com.klwork.flow.act;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,17 +7,19 @@ import java.util.Map;
 import org.activiti.engine.FormService;
 import org.activiti.engine.ProcessEngines;
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.TaskService;
 import org.activiti.engine.form.FormProperty;
 import org.activiti.engine.task.IdentityLink;
 import org.activiti.engine.task.Task;
 
 import com.klwork.business.domain.model.EntityDictionary;
 import com.klwork.business.domain.model.OutsourcingProject;
-import com.klwork.business.domain.model.OutsourcingProjectQuery;
 import com.klwork.business.domain.service.OutsourcingProjectService;
+import com.klwork.business.domain.service.ProjectManagerService;
 import com.klwork.explorer.I18nManager;
 import com.klwork.explorer.Messages;
 import com.klwork.explorer.ViewToolManager;
+import com.klwork.explorer.ui.event.SubmitEvent;
 import com.klwork.explorer.ui.form.FormPropertiesComponent;
 import com.klwork.explorer.ui.form.FormPropertiesEvent;
 import com.klwork.explorer.ui.handler.BinderHandler;
@@ -49,7 +50,9 @@ public class PublishNeedForm extends com.klwork.explorer.ui.task.TaskForm {
 	// Services
 	protected transient FormService formService;
 	protected transient RuntimeService runtimeService;
-	protected transient OutsourcingProjectService outsourcingProjectService;
+	protected transient TaskService taskService;
+	public transient OutsourcingProjectService outsourcingProjectService;
+	protected transient ProjectManagerService projectManagerService;
 	protected I18nManager i18nManager;
 
 	// UI
@@ -60,70 +63,70 @@ public class PublishNeedForm extends com.klwork.explorer.ui.task.TaskForm {
 	protected GridLayout taskDetails;
 	protected MyTaskRelatedContentComponent relatedContent;
 	//需求审核人列表
-	protected IdentityLink identityLinkChecker;
+	public IdentityLink identityLinkChecker;
 
 	FieldGroup fieldGroup = new FieldGroup();
 
 	public PublishNeedForm(Task task) {
-		super();
 		setTask(task);
 		formService = ProcessEngines.getDefaultProcessEngine().getFormService();
 		runtimeService = ProcessEngines.getDefaultProcessEngine()
 				.getRuntimeService();
+		taskService = ProcessEngines.getDefaultProcessEngine()
+				.getTaskService();
+		
 		i18nManager = ViewToolManager.getI18nManager();
 		outsourcingProjectService = ViewToolManager
 				.getBean("outsourcingProjectService");
-
+		projectManagerService = ViewToolManager
+				.getBean("projectManagerService");
+	}
+	
+	@Override
+	protected void initUi() {
 		addStyleName(ExplorerLayout.STYLE_DETAIL_BLOCK);
 		addStyleName(ExplorerLayout.STYLE_FORM_PROPERTIES);
-
+		//标题
 		initTitle();
+		//表单数据
 		initFormPropertiesComponent();
+		
+		//相关附件
 		initRelatedContent();
+		
+		//作品上传
+		initUpWorkContent();
+	
+		//button
 		initButtons();
+		//button的行为
 		initActions();
-
 	}
 
-	private void initActions() {
+	
+	protected void initUpWorkContent() {
+		
+	}
+
+	protected void initActions() {
 		submitFormButton.addClickListener(new ClickListener() {
 			private static final long serialVersionUID = -6091586145870618870L;
 
 			public void buttonClick(ClickEvent event) {
 				try {
-					/*
-					 * Map<String, String> formProperties =
-					 * formPropertiesComponent .getFormPropertyValues();
-					 */
-					Map<String, String> formProperties = new HashMap<String, String>();
+					Map<String, Object> formProperties = null;
 					try {
 						fieldGroup.commit();
 						OutsourcingProject outsourcingProject = BinderHandler
 								.getFieldGroupBean(fieldGroup);
-						if(identityLinkChecker == null){//没有审核人进行直接发布
-							outsourcingProject
-								.setPrgStatus(EntityDictionary.OUTSOURCING_STATUS_PUBLISHED);
-						}else {
-							outsourcingProject
-							.setPrgStatus(EntityDictionary.OUTSOURCING_STATUS_PUBLISHING);
-						}
-						outsourcingProject.setProcInstId(getTask()
-								.getProcessInstanceId());
-						outsourcingProject.setOwnUser(getTask().getAssignee());
-						outsourcingProjectService
-								.updateOutsourcingProject(outsourcingProject);
-						formProperties.put("outsourcingProjectId",
-								outsourcingProject.getId());
-						String checker = (identityLinkChecker != null)?identityLinkChecker.getUserId():null;
-						formProperties.put("checker",
-								checker);
+						formProperties = projectManagerService.submitPublishNeed(outsourcingProject,getTask(),identityLinkChecker);
 					} catch (CommitException e) {
 						e.printStackTrace();
 					}
 
 					// 通知外边的调用任务,任务相关信息已经保存
-					fireEvent(new FormPropertiesEvent(PublishNeedForm.this,
-							FormPropertiesEvent.TYPE_SUBMIT, formProperties));
+					fireEvent(new SubmitEvent(PublishNeedForm.this,
+							SubmitEvent.SUBMITTED, formProperties));
 					submitFormButton.setComponentError(null);
 				} catch (InvalidValueException ive) {
 					// Error is presented to user by the form component
@@ -143,9 +146,9 @@ public class PublishNeedForm extends com.klwork.explorer.ui.task.TaskForm {
 		});
 	}
 
-	private void initRelatedContent() {
+	protected void initRelatedContent() {
 		relatedContent = new MyTaskRelatedContentComponent(
-				this.getTask(), this);
+				this.getTask(), this,false);
 		addComponent(relatedContent);
 	}
 
@@ -181,6 +184,10 @@ public class PublishNeedForm extends com.klwork.explorer.ui.task.TaskForm {
 		formTitle.setVisible(false);
 		addComponent(formTitle);
 
+		initPromptTitle();
+	}
+
+	protected void initPromptTitle() {
 		setFormHelp(i18nManager.getMessage(Messages.TASK_FORM_HELP));
 	}
 
@@ -208,53 +215,52 @@ public class PublishNeedForm extends com.klwork.explorer.ui.task.TaskForm {
 	}
 
 	protected void initFormPropertiesComponent() {
-		// formPropertiesComponent = new FormPropertiesComponent();
+		//绑定数据和初始grid布局
+		initFormLayoutAndData();
+		//项目名称
+		initProjectName(false);
+		
+		//截止时间
+		initDeadline(false);
+		
+		//悬赏金额
+		initBounty(false);
+		
+		//需求类型
+		initNeedType(false);
+		
+		//需求描叙
+		initDescription(false);
+
+		//审核人
+		initChecker();
+
+	}
+
+	protected void initFormLayoutAndData() {
 		taskDetails = new GridLayout(4, 10);
 		taskDetails.setWidth(100, Unit.PERCENTAGE);
 		taskDetails.addStyleName(ExplorerLayout.STYLE_TITLE_BLOCK);
 		taskDetails.setSpacing(true);
 		addComponent(taskDetails);
 		// 查询关联的project
-		OutsourcingProject project = getRelateOutSourceingProject();
+		OutsourcingProject project = projectManagerService.getRelateOutSourceingProject(getTask());
 		BeanItem<OutsourcingProject> item = new BeanItem<OutsourcingProject>(
 				project);
 		fieldGroup.setItemDataSource(item);
+	}
 
-		Label nameLabel = new Label("项目名称:");
-		taskDetails.addComponent(nameLabel, 0, 0, 0, 0);
-		initLabelOfGrid(taskDetails, nameLabel);
+	protected void initChecker() {
+		Label checkerLabel = new Label("需求审核人:");
+		taskDetails.addComponent(checkerLabel, 0, 9);
+		initLabelOfGrid(taskDetails, checkerLabel);
+		
+		//需求审核人
+		UserDetailsComponent u = createCheckerComponent();
+		taskDetails.addComponent(u, 1, 9);
+	}
 
-		TextField nameField = CommonFieldHandler.createTextField("");
-		taskDetails.addComponent(nameField, 1, 0, 1, 0);
-		fieldGroup.bind(nameField, "name");
-
-		Label endDateLabel = new Label("作品上传截止时间:");
-		taskDetails.addComponent(endDateLabel, 2, 0, 2, 0);
-		initLabelOfGrid(taskDetails, endDateLabel);
-
-		DateField endDateField = CommonFieldHandler.createDateField("", false);
-		taskDetails.addComponent(endDateField, 3, 0, 3, 0);
-		fieldGroup.bind(endDateField, "deadline");
-
-		Label amountLabel = new Label("悬赏金额:");
-		taskDetails.addComponent(amountLabel, 0, 1, 0, 1);
-		initLabelOfGrid(taskDetails, amountLabel);
-
-		TextField amountField = CommonFieldHandler.createTextField("");
-		taskDetails.addComponent(amountField, 1, 1, 1, 1);
-		fieldGroup.bind(amountField, "bounty");
-
-		Label reqTypeLabel = new Label("需求类型:");
-		taskDetails.addComponent(reqTypeLabel, 2, 1, 2, 1);
-		initLabelOfGrid(taskDetails, reqTypeLabel);
-		Map<String, String> data = new HashMap();
-		data.put("1", "视频");
-		data.put("2", "创意");
-		ComboBox reqTypeLabelField = CommonFieldHandler.createComBox(null,
-				data, "1");
-		taskDetails.addComponent(reqTypeLabelField, 3, 1, 3, 1);
-		fieldGroup.bind(reqTypeLabelField, "type");
-
+	protected void initDescription(boolean readOnly) {
 		Label descriptionLabel = new Label("需求描述及要求:");
 		taskDetails.addComponent(descriptionLabel, 0, 3, 0, 3);
 		initLabelOfGrid(taskDetails, descriptionLabel);
@@ -265,18 +271,59 @@ public class PublishNeedForm extends com.klwork.explorer.ui.task.TaskForm {
 		// descriptionField.setH
 		taskDetails.addComponent(descriptionField, 1, 3, 3, 8);
 		fieldGroup.bind(descriptionField, "description");
-
-		Label checkerLabel = new Label("需求审核人:");
-		taskDetails.addComponent(checkerLabel, 0, 9);
-		initLabelOfGrid(taskDetails, checkerLabel);
-		
-		//需求审核人
-		UserDetailsComponent u = createCheckerComponent();
-		taskDetails.addComponent(u, 1, 9);
-
+		descriptionField.setReadOnly(readOnly);
 	}
 
-	private IdentityLink queryAuditor() {
+	protected void initNeedType(boolean readOnly) {
+		Label reqTypeLabel = new Label("需求类型:");
+		taskDetails.addComponent(reqTypeLabel, 2, 1, 2, 1);
+		initLabelOfGrid(taskDetails, reqTypeLabel);
+		Map<String, String> data = new HashMap();
+		data.put("1", "视频");
+		data.put("2", "创意");
+		ComboBox reqTypeLabelField = CommonFieldHandler.createComBox(null,
+				data, "1");
+		taskDetails.addComponent(reqTypeLabelField, 3, 1, 3, 1);
+		fieldGroup.bind(reqTypeLabelField, "type");
+		reqTypeLabelField.setReadOnly(readOnly);
+	}
+
+	protected void initBounty(boolean readOnly) {
+		Label amountLabel = new Label("悬赏金额:");
+		taskDetails.addComponent(amountLabel, 0, 1, 0, 1);
+		initLabelOfGrid(taskDetails, amountLabel);
+
+		TextField amountField = CommonFieldHandler.createTextField("");
+		taskDetails.addComponent(amountField, 1, 1, 1, 1);
+		fieldGroup.bind(amountField, "bounty");
+		fieldGroup.setReadOnly(readOnly);
+	}
+
+	protected void initDeadline(boolean readOnly) {
+		Label endDateLabel = new Label("作品上传截止时间:");
+		taskDetails.addComponent(endDateLabel, 2, 0, 2, 0);
+		initLabelOfGrid(taskDetails, endDateLabel);
+
+		DateField endDateField = CommonFieldHandler.createDateField("", false);
+		taskDetails.addComponent(endDateField, 3, 0, 3, 0);
+		fieldGroup.bind(endDateField, "deadline");
+		endDateField.setReadOnly(readOnly);
+	}
+
+	protected void initProjectName(boolean readOnly) {
+		Label nameLabel = new Label("项目名称:");
+		taskDetails.addComponent(nameLabel, 0, 0, 0, 0);
+		initLabelOfGrid(taskDetails, nameLabel);
+
+		TextField nameField = CommonFieldHandler.createTextField("");
+		taskDetails.addComponent(nameField, 1, 0, 1, 0);
+		fieldGroup.bind(nameField, "name");
+		nameField.setReadOnly(readOnly);
+	
+	}
+
+	
+	private IdentityLink queryAuditorOfInstance() {
 		List<IdentityLink> identityLinks = runtimeService
 				.getIdentityLinksForProcessInstance(getTask()
 						.getProcessInstanceId());
@@ -296,7 +343,7 @@ public class PublishNeedForm extends com.klwork.explorer.ui.task.TaskForm {
 
 	protected UserDetailsComponent createCheckerComponent() {
 		boolean hasCheck = false;
-		identityLinkChecker = queryAuditor();
+		identityLinkChecker = queryAuditorOfInstance();
 		// 无所属人
 		String roleMessage = (identityLinkChecker != null) ? "审核人" : "无审核人";
 		String userId = (identityLinkChecker != null) ? identityLinkChecker.getUserId(): null;
@@ -307,16 +354,6 @@ public class PublishNeedForm extends com.klwork.explorer.ui.task.TaskForm {
 				new ChangeCheckerListener(identityLinkChecker, getTask(), this));
 		
 		return involvedDetails;
-	}
-
-	public OutsourcingProject getRelateOutSourceingProject() {
-		OutsourcingProjectQuery query = new OutsourcingProjectQuery();
-		query.setProcInstId(getTask().getProcessInstanceId());
-		OutsourcingProject ret = outsourcingProjectService
-				.findOneEntityByQuery(query);
-		if (ret != null)
-			return ret;
-		return new OutsourcingProject();
 	}
 
 	public void initLabelOfGrid(GridLayout taskDetails, Label nameLabel) {
